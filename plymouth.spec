@@ -18,6 +18,7 @@ BuildRequires:	gtk+2-devel
 BuildRequires:	libpng-devel
 BuildRequires:	libtool
 BuildRequires:	pango-devel >= 1.21.0
+BuildRequires:	pkgconfig
 Requires(post):	%{name}-scripts
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
