@@ -67,7 +67,6 @@ a boot log viewing application.
 %package scripts
 Summary:	Plymouth related scripts
 Group:		Applications/System
-Requires:	nash
 
 %description scripts
 This package contains scripts that help integrate Plymouth with the
