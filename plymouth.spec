@@ -10,6 +10,8 @@ License:	GPL v2+
 Group:		Base
 Source0:	http://freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
 # Source0-md5:	e29e754e942e6fcaf5185772d18fd97e
+Source1:	%{name}-logo.png
+# Source1-md5:	6b38a868585adfd3a96a4ad16973c1f8
 URL:		http://freedesktop.org/software/plymouth/releases
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -153,7 +155,7 @@ features a blue flamed sun with animated solar flares.
 	--disable-tests \
 	--without-boot-entry \
 	--without-default-plugin \
-	--with-logo=%{_pixmapsdir}/system-logo-white.png \
+	--with-logo=%{_pixmapsdir}/plymouth-logo.png \
 	--with-background-start-color-stop=0x0073B3 \
 	--with-background-end-color-stop=0x00457E \
 	--with-background-color=0x3391cd \
@@ -175,6 +177,7 @@ find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} \;
 (cd $RPM_BUILD_ROOT%{_bindir}; ln -s ../../bin/plymouth)
 
 install -d $RPM_BUILD_ROOT%{_localstatedir}/lib/plymouth
+install %SOURCE1 %{_pixmapsdir}/plymouth-logo.png
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -242,6 +245,7 @@ fi
 %{_libdir}/plymouth/text.so
 %{_localstatedir}/run/plymouth
 %{_localstatedir}/spool/plymouth
+%{_pixmapsdir}/plymouth-logo.png
 #%ghost %{_localstatedir}/lib/plymouth/boot-duration
 
 %files devel
