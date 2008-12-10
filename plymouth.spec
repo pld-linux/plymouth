@@ -237,10 +237,9 @@ fi
 %dir %{_datadir}/plymouth
 %dir %{_libexecdir}/plymouth
 %dir %{_localstatedir}/lib/plymouth
-%{plymouthdaemon_execdir}/plymouthd
-%{plymouthclient_execdir}/plymouth
+%attr(755,root,root) %{plymouthdaemon_execdir}/plymouthd
+%attr(755,root,root) %{plymouthclient_execdir}/plymouth
 %attr(755,root,root) %{_bindir}/plymouth
-%attr(755,root,root) %{_bindir}/rhgb-client
 %{_libdir}/plymouth/details.so
 %{_libdir}/plymouth/text.so
 %{_localstatedir}/run/plymouth
@@ -250,7 +249,7 @@ fi
 
 %files devel
 %defattr(644,root,root,755)
-%{plymouth_libdir}/libply.so
+%attr(755,root,root) %{plymouth_libdir}/libply.so
 %{_libdir}/libplybootsplash.so
 %{_pkgconfigdir}/plymouth-1.pc
 %{_includedir}/plymouth-1
