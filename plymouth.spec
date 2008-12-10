@@ -177,7 +177,8 @@ find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} \;
 (cd $RPM_BUILD_ROOT%{_bindir}; ln -s ../../bin/plymouth)
 
 install -d $RPM_BUILD_ROOT%{_localstatedir}/lib/plymouth
-install %SOURCE1 %{_pixmapsdir}/plymouth-logo.png
+install -d $RPM_BUILD_ROOT%{_pixmapsdir}
+install %SOURCE1 $RPM_BUILD_ROOT%{_pixmapsdir}/plymouth-logo.png
 
 %clean
 rm -rf $RPM_BUILD_ROOT
