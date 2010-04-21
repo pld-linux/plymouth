@@ -1,28 +1,33 @@
-%define plymouthdaemon_execdir /sbin
-%define plymouthclient_execdir /bin
-%define plymouth_libdir /%{_lib}
-
+# TODO
+# - revisit subpackages
+# - fix: Requires: /bin/bash
 Summary:	Graphical Boot Animation and Logger
 Name:		plymouth
-Version:	0.7.2
+Version:	0.8.2
 Release:	0.1
 License:	GPL v2+
 Group:		Base
-Source0:	http://freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
-# Source0-md5:	5d5b2b7c2dd38ef91c8c6cffb088ce93
+Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
+# Source0-md5:	c2a45a9f1584f0051b6ab214527fd98e
 Source1:	%{name}-logo.png
 # Source1-md5:	6b38a868585adfd3a96a4ad16973c1f8
-URL:		http://freedesktop.org/software/plymouth/releases
+Patch0:		libdrm.patch
+URL:		http://www.freedesktop.org/wiki/Software/Plymouth
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	cairo-devel
 BuildRequires:	gtk+2-devel
+BuildRequires:	libdrm-devel
 BuildRequires:	libpng-devel
 BuildRequires:	libtool
-BuildRequires:	pango-devel >= 1.21.0
+BuildRequires:	pango-devel >= 1:1.21.0
 BuildRequires:	pkgconfig
-Requires(post):	%{name}-scripts
+Requires(post):	%{name}-scripts = %{version}-%{release}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+
+%define		plymouthdaemon_execdir	/sbin
+%define		plymouthclient_execdir	/bin
+%define		plymouth_libdir			/%{_lib}
 
 %description
 Plymouth provides an attractive graphical boot animation in place of
@@ -78,6 +83,7 @@ event start-up services fail.
 
 %prep
 %setup -q
+%patch0 -p1
 
 %build
 %{__libtoolize}
@@ -121,7 +127,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %postun
 if [ $1 -eq 0 ]; then
-    rm -f %{_libdir}/plymouth/default.so
+	rm -f %{_libdir}/plymouth/default.so
 fi
 
 %post libs -p /sbin/ldconfig
@@ -132,7 +138,10 @@ fi
 %doc AUTHORS NEWS README
 %attr(755,root,root) %{_bindir}/rhgb-client
 %attr(755,root,root) %{_sbindir}/plymouth-set-default-theme
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/plymouth/plymouthd.conf
+%{_mandir}/man8/plymouth.8*
 %dir %{_datadir}/plymouth
+%{_datadir}/plymouth/plymouthd.defaults
 %{_datadir}/plymouth/themes
 %dir %{_libexecdir}/plymouth
 %dir %{_localstatedir}/lib/plymouth
@@ -153,21 +162,35 @@ fi
 
 %files devel
 %defattr(644,root,root,755)
-%attr(755,root,root) %{plymouth_libdir}/libply.so
-%{_libdir}/libplybootsplash.so
-%{_pkgconfigdir}/plymouth-1.pc
+%{plymouth_libdir}/libply.so
+%{plymouth_libdir}/libply-splash-core.so
+%{_libdir}/libply-boot-client.so
+%{_libdir}/libply-splash-graphics.so
+%{_pkgconfigdir}/ply-boot-client.pc
+%{_pkgconfigdir}/ply-splash-core.pc
+%{_pkgconfigdir}/ply-splash-graphics.pc
 %{_includedir}/plymouth-1
 
 %files libs
 %defattr(644,root,root,755)
-%attr(755,root,root) %{plymouth_libdir}/libply.so.*
-%attr(755,root,root) %{_libdir}/libplybootsplash.so.*
+%attr(755,root,root) %{plymouth_libdir}/libply.so.*.*.*
+%attr(755,root,root) %ghost %{plymouth_libdir}/libply.so.2
+%attr(755,root,root) %{plymouth_libdir}/libply-splash-core.so.*.*.*
+%attr(755,root,root) %ghost %{plymouth_libdir}/libply-splash-core.so.2
+%attr(755,root,root) %{_libdir}/libply-boot-client.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libply-boot-client.so.2
+%attr(755,root,root) %{_libdir}/libply-splash-graphics.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libply-splash-graphics.so.2
 %dir %{_libdir}/plymouth
+%attr(755,root,root) %{_libdir}/plymouth/renderers/drm.so
+%attr(755,root,root) %{_libdir}/plymouth/renderers/frame-buffer.so
+%attr(755,root,root) %{_libdir}/plymouth/renderers/x11.so
 
 %files scripts
 %defattr(644,root,root,755)
-%{_libexecdir}/plymouth/plymouth-update-initrd
-%{_libexecdir}/plymouth/plymouth-populate-initrd
+%attr(755,root,root) %{_libexecdir}/plymouth/plymouth-generate-initrd
+%attr(755,root,root) %{_libexecdir}/plymouth/plymouth-populate-initrd
+%attr(755,root,root) %{_libexecdir}/plymouth/plymouth-update-initrd
 
 %files utils
 %defattr(644,root,root,755)
