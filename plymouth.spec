@@ -122,9 +122,6 @@ install %SOURCE1 $RPM_BUILD_ROOT%{_pixmapsdir}/plymouth-logo.png
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post
-[ -f %{_localstatedir}/lib/plymouth/boot-duration ] || cp -f %{_datadir}/plymouth/default-boot-duration %{_localstatedir}/lib/plymouth/boot-duration
-
 %postun
 if [ $1 -eq 0 ]; then
 	rm -f %{_libdir}/plymouth/default.so
