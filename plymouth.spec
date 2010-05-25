@@ -3,15 +3,15 @@
 # - fix: Requires: /bin/bash
 Summary:	Graphical Boot Animation and Logger
 Name:		plymouth
-Version:	0.8.2
+Version:	0.8.3
 Release:	0.1
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
-# Source0-md5:	c2a45a9f1584f0051b6ab214527fd98e
+# Source0-md5:	a479180467b21dd1c5477160d5a1fd35
 Source1:	%{name}-logo.png
 # Source1-md5:	6b38a868585adfd3a96a4ad16973c1f8
-Patch0:		libdrm.patch
+#Patch0:		libdrm.patch
 URL:		http://www.freedesktop.org/wiki/Software/Plymouth
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -83,7 +83,7 @@ event start-up services fail.
 
 %prep
 %setup -q
-%patch0 -p1
+#%patch0 -p1
 
 %build
 %{__libtoolize}
@@ -138,6 +138,7 @@ fi
 %doc AUTHORS NEWS README
 %attr(755,root,root) %{_bindir}/rhgb-client
 %attr(755,root,root) %{_sbindir}/plymouth-set-default-theme
+%dir %{_sysconfdir}/plymouth
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/plymouth/plymouthd.conf
 %{_mandir}/man8/plymouth.8*
 %dir %{_datadir}/plymouth
@@ -182,6 +183,7 @@ fi
 %attr(755,root,root) %{_libdir}/libply-splash-graphics.so.*.*.*
 %attr(755,root,root) %ghost %{_libdir}/libply-splash-graphics.so.2
 %dir %{_libdir}/plymouth
+%dir %{_libdir}/plymouth/renderers
 %attr(755,root,root) %{_libdir}/plymouth/renderers/drm.so
 %attr(755,root,root) %{_libdir}/plymouth/renderers/frame-buffer.so
 %attr(755,root,root) %{_libdir}/plymouth/renderers/x11.so
