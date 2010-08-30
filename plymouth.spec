@@ -1,10 +1,11 @@
 # TODO
 # - revisit subpackages
 # - fix: Requires: /bin/bash
+# - integrate with geninitrd
 Summary:	Graphical Boot Animation and Logger
 Name:		plymouth
 Version:	0.8.3
-Release:	0.1
+Release:	0.2
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
@@ -146,24 +147,24 @@ fi
 %attr(755,root,root) %{plymouthdaemon_execdir}/plymouthd
 %attr(755,root,root) %{plymouthclient_execdir}/plymouth
 %attr(755,root,root) %{_bindir}/plymouth
-%{_libdir}/plymouth/details.so
-%{_libdir}/plymouth/fade-throbber.so
-%{_libdir}/plymouth/label.so
-%{_libdir}/plymouth/script.so
-%{_libdir}/plymouth/space-flares.so
-%{_libdir}/plymouth/text.so
-%{_libdir}/plymouth/throbgress.so
-%{_libdir}/plymouth/two-step.so
+%attr(755,root,root) %{_libdir}/plymouth/details.so
+%attr(755,root,root) %{_libdir}/plymouth/fade-throbber.so
+%attr(755,root,root) %{_libdir}/plymouth/label.so
+%attr(755,root,root) %{_libdir}/plymouth/script.so
+%attr(755,root,root) %{_libdir}/plymouth/space-flares.so
+%attr(755,root,root) %{_libdir}/plymouth/text.so
+%attr(755,root,root) %{_libdir}/plymouth/throbgress.so
+%attr(755,root,root) %{_libdir}/plymouth/two-step.so
 %{_localstatedir}/run/plymouth
 %{_localstatedir}/spool/plymouth
 %{_pixmapsdir}/plymouth-logo.png
 
 %files devel
 %defattr(644,root,root,755)
-%{plymouth_libdir}/libply.so
-%{plymouth_libdir}/libply-splash-core.so
-%{_libdir}/libply-boot-client.so
-%{_libdir}/libply-splash-graphics.so
+%attr(755,root,root) %{plymouth_libdir}/libply.so
+%attr(755,root,root) %{plymouth_libdir}/libply-splash-core.so
+%attr(755,root,root) %{_libdir}/libply-boot-client.so
+%attr(755,root,root) %{_libdir}/libply-splash-graphics.so
 %{_pkgconfigdir}/ply-boot-client.pc
 %{_pkgconfigdir}/ply-splash-core.pc
 %{_pkgconfigdir}/ply-splash-graphics.pc
