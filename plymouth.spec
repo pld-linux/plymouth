@@ -12,6 +12,7 @@ Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version
 # Source0-md5:	a479180467b21dd1c5477160d5a1fd35
 Source1:	%{name}-logo.png
 # Source1-md5:	6b38a868585adfd3a96a4ad16973c1f8
+Source2:	%{name}.tmpfiles
 #Patch0:		libdrm.patch
 URL:		http://www.freedesktop.org/wiki/Software/Plymouth
 BuildRequires:	autoconf
@@ -106,6 +107,7 @@ event start-up services fail.
 
 %install
 rm -rf $RPM_BUILD_ROOT
+install -d $RPM_BUILD_ROOT/usr/lib/tmpfiles.d
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
@@ -119,6 +121,7 @@ find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} \;
 install -d $RPM_BUILD_ROOT%{_localstatedir}/lib/plymouth
 install -d $RPM_BUILD_ROOT%{_pixmapsdir}
 install %SOURCE1 $RPM_BUILD_ROOT%{_pixmapsdir}/plymouth-logo.png
+install %{SOURCE2} $RPM_BUILD_ROOT/usr/lib/tmpfiles.d/%{name}.conf
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -155,6 +158,7 @@ fi
 %attr(755,root,root) %{_libdir}/plymouth/text.so
 %attr(755,root,root) %{_libdir}/plymouth/throbgress.so
 %attr(755,root,root) %{_libdir}/plymouth/two-step.so
+/usr/lib/tmpfiles.d/%{name}.conf
 %{_localstatedir}/run/plymouth
 %{_localstatedir}/spool/plymouth
 %{_pixmapsdir}/plymouth-logo.png
