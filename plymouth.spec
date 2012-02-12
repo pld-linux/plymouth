@@ -2,19 +2,19 @@
 # - revisit subpackages
 # - fix: Requires: /bin/bash
 # - integrate with geninitrd
+%define		snap	20120212
 Summary:	Graphical Boot Animation and Logger
 Name:		plymouth
-Version:	0.8.3
-Release:	1
+Version:	0.8.4
+Release:	0.%{snap}.1
 License:	GPL v2+
 Group:		Base
-Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
-# Source0-md5:	a479180467b21dd1c5477160d5a1fd35
+#Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.%{snap}.tar.bz2
+Source0:	%{name}-%{version}.%{snap}.tar.bz2
+# Source0-md5:	6accf3a89fa9e5a99fbc4eb63909bcd5
 Source1:	%{name}-logo.png
 # Source1-md5:	6b38a868585adfd3a96a4ad16973c1f8
 Source2:	%{name}.tmpfiles
-#Patch0:		libdrm.patch
-Patch0:		%{name}-libpng15.patch
 URL:		http://www.freedesktop.org/wiki/Software/Plymouth
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -25,6 +25,8 @@ BuildRequires:	libpng-devel
 BuildRequires:	libtool
 BuildRequires:	pango-devel >= 1:1.21.0
 BuildRequires:	pkgconfig
+Obsoletes:	plymouth-utils
+Obsoletes:	plymouth-gdm-hooks
 Requires(post):	%{name}-scripts = %{version}-%{release}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -55,15 +57,6 @@ Requires:	pkgconfig
 This package contains the libply and libplybootsplash libraries and
 headers needed to develop 3rd party splash plugins for Plymouth.
 
-%package utils
-Summary:	Plymouth related utilities
-Group:		Applications/System
-Requires:	%{name} = %{version}-%{release}
-
-%description utils
-This package contains utilities that integrate with Plymouth including
-a boot log viewing application.
-
 %package scripts
 Summary:	Plymouth related scripts
 Group:		Applications/System
@@ -72,36 +65,19 @@ Group:		Applications/System
 This package contains scripts that help integrate Plymouth with the
 system.
 
-%package gdm-hooks
-Summary:	Plymouth GDM integration
-Group:		Applications/System
-Requires:	%{name} = %{version}-%{release}
-Requires:	gdm >= 1:2.22.0
-Requires:	plymouth-utils
-
-%description gdm-hooks
-This package contains support files for integrating Plymouth with GDM
-Namely, it adds hooks to show boot messages at the login screen in the
-event start-up services fail.
-
 %prep
 %setup -q
-%patch0 -p1
 
 %build
-%{__libtoolize}
-%{__aclocal}
-%{__autoconf}
-%{__automake}
 %configure \
 	--enable-tracing \
 	--disable-tests \
-	--without-boot-entry \
 	--with-logo=%{_pixmapsdir}/plymouth-logo.png \
-	--with-background-start-color-stop=0x0073B3 \
-	--with-background-end-color-stop=0x00457E \
-	--with-background-color=0x3391cd \
+	--with-background-start-color-stop=0x003194 \
+	--with-background-end-color-stop=0x000063 \
+	--with-background-color=0x0063c6 \
 	--enable-gdm-transition \
+	--enable-systemd-integration \
 	--with-system-root-install
 
 %{__make}
@@ -113,15 +89,16 @@ install -d $RPM_BUILD_ROOT/usr/lib/tmpfiles.d
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
-find $RPM_BUILD_ROOT -name '*.a' -exec rm -f {} \;
-find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} \;
+%{__rm} $RPM_BUILD_ROOT{%{plymouth_libdir},%{_libdir}}/*.{a,la}
+%{__rm} $RPM_BUILD_ROOT%{_libdir}/plymouth/{,renderers/}*.{a,la}
 
 # Temporary symlink until rc.sysinit is fixed
 (cd $RPM_BUILD_ROOT%{_bindir}; ln -s ../../bin/plymouth)
 
 install -d $RPM_BUILD_ROOT%{_localstatedir}/lib/plymouth
 install -d $RPM_BUILD_ROOT%{_pixmapsdir}
-install %SOURCE1 $RPM_BUILD_ROOT%{_pixmapsdir}/plymouth-logo.png
+
+install %{SOURCE1} $RPM_BUILD_ROOT%{_pixmapsdir}/plymouth-logo.png
 install %{SOURCE2} $RPM_BUILD_ROOT/usr/lib/tmpfiles.d/%{name}.conf
 
 %clean
@@ -196,11 +173,3 @@ fi
 %attr(755,root,root) %{_libexecdir}/plymouth/plymouth-generate-initrd
 %attr(755,root,root) %{_libexecdir}/plymouth/plymouth-populate-initrd
 %attr(755,root,root) %{_libexecdir}/plymouth/plymouth-update-initrd
-
-%files utils
-%defattr(644,root,root,755)
-%attr(755,root,root) %{_bindir}/plymouth-log-viewer
-
-%files gdm-hooks
-%defattr(644,root,root,755)
-%{_datadir}/gdm/autostart/LoginWindow/plymouth-log-viewer.desktop
