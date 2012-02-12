@@ -5,7 +5,7 @@
 Summary:	Graphical Boot Animation and Logger
 Name:		plymouth
 Version:	0.8.3
-Release:	0.2
+Release:	1
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
@@ -14,6 +14,7 @@ Source1:	%{name}-logo.png
 # Source1-md5:	6b38a868585adfd3a96a4ad16973c1f8
 Source2:	%{name}.tmpfiles
 #Patch0:		libdrm.patch
+Patch0:		%{name}-libpng15.patch
 URL:		http://www.freedesktop.org/wiki/Software/Plymouth
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -85,7 +86,7 @@ event start-up services fail.
 
 %prep
 %setup -q
-#%patch0 -p1
+%patch0 -p1
 
 %build
 %{__libtoolize}
