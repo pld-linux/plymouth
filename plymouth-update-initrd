@@ -1,0 +1,2 @@
+#!/bin/bash
+/sbin/new-kernel-pkg --package kernel --mkinitrd --dracut --depmod --install $(uname -r)

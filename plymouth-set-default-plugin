@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "plymouth-set-default-plugin has been deprecated by plymouth-set-default-theme"
