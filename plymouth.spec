@@ -2,12 +2,13 @@
 # - revisit subpackages
 # - fix: Requires: /bin/bash
 # - integrate with geninitrd
+# - pldize recent update
 %define		snap	20120319
 Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
 Version:	0.8.4
-Release:	0.%{snap}.1.1
+Release:	0.%{snap}.2
 License:	GPL v2+
 Group:		Base
 #Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.%{snap}.tar.bz2
