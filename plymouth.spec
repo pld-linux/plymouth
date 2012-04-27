@@ -7,7 +7,7 @@ Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
 Version:	0.8.4
-Release:	2
+Release:	3
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
@@ -34,6 +34,7 @@ BuildRequires:	pkgconfig
 Requires:	%{name}-graphics-libs = %{version}-%{release}
 Requires(post):	%{name}-scripts = %{version}-%{release}
 Requires:	/etc/os-release
+Requires:	systemd-plymouth
 Obsoletes:	plymouth-gdm-hooks
 Obsoletes:	plymouth-utils
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -346,7 +347,7 @@ sed -i -e 's/fade-in/charge/g' src/plymouthd.defaults
 	--disable-silent-rules \
 	--disable-static \
 	--disable-tests \
-	--enable-gdm-transition \
+	--disable-gdm-transition \
 	--enable-systemd-integration \
 	--enable-tracing \
 	--without-rhgb-compat-link \
@@ -361,7 +362,7 @@ sed -i -e 's/fade-in/charge/g' src/plymouthd.defaults
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_pixmapsdir},%{systemdtmpfilesdir}}
+install -d $RPM_BUILD_ROOT{%{_bindir},%{_pixmapsdir},%{systemdtmpfilesdir}}
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
