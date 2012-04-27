@@ -224,7 +224,6 @@ Group:		Base
 Requires:	%{name}(system-theme) = %{version}-%{release}
 Provides:	%{name}-system-plugin = %{version}-%{release}
 Obsoletes:	plymouth-system-plugin < %{version}-%{release}
-Obsoletes:	rhgb < 1:10.0.0
 
 %description system-theme
 This metapackage tracks the current distribution default theme.
@@ -350,6 +349,7 @@ sed -i -e 's/fade-in/charge/g' src/plymouthd.defaults
 	--enable-gdm-transition \
 	--enable-systemd-integration \
 	--enable-tracing \
+	--without-rhgb-compat-link \
 	--with-background-start-color-stop=0x009431 \
 	--with-background-end-color-stop=0x006300 \
 	--with-background-color=0x00c663 \
@@ -412,7 +412,6 @@ fi
 %defattr(644,root,root,755)
 %doc AUTHORS README TODO
 %attr(755,root,root) %{_bindir}/plymouth
-%attr(755,root,root) %{_bindir}/rhgb-client
 %dir %{_sysconfdir}/plymouth
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/plymouth/plymouthd.conf
 %{_mandir}/man8/plymouth.8*
