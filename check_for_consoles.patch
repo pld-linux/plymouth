@@ -21,7 +21,7 @@ index e4223b7..c85fe4c 100644
    char *console;
  
    ply_trace ("opening %s", path);
-@@ -1888,60 +1890,84 @@ add_consoles_from_file (state_t         *state,
+@@ -1888,60 +1890,86 @@ add_consoles_from_file (state_t         *state,
    if (fd < 0)
      {
        ply_trace ("couldn't open it: %m");
@@ -86,10 +86,9 @@ index e4223b7..c85fe4c 100644
 +      if (strcmp (console, "tty0") != 0)
 +        state->should_force_details = true;
  
--      asprintf (&console_device, "/dev/%s", console);
--      free (console);
--      console = NULL;
-+      asprintf (&console_device, "/dev/%s", remaining_file_contents);
+       asprintf (&console_device, "/dev/%s", console);
+       free (console);
+       console = NULL;
  
        ply_trace ("console %s found!", console_device);
        ply_hashtable_insert (consoles, console_device, console_device);
