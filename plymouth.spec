@@ -7,7 +7,7 @@ Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
 Version:	0.8.4
-Release:	1
+Release:	2
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
@@ -20,6 +20,7 @@ Source4:	boot-duration
 Source5:	%{name}-set-default-plugin
 Source6:	%{name}-update-initrd
 Patch0:		check_for_consoles.patch
+Patch1:		text-colors.patch
 URL:		http://www.freedesktop.org/wiki/Software/Plymouth
 #BuildRequires:	autoconf >= 2.50
 #BuildRequires:	automake
@@ -32,6 +33,7 @@ BuildRequires:	pango-devel >= 1:1.21.0
 BuildRequires:	pkgconfig
 Requires:	%{name}-graphics-libs = %{version}-%{release}
 Requires(post):	%{name}-scripts = %{version}-%{release}
+Requires:	/etc/os-release
 Obsoletes:	plymouth-gdm-hooks
 Obsoletes:	plymouth-utils
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -335,6 +337,7 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 
 # Change the default theme
 sed -i -e 's/fade-in/charge/g' src/plymouthd.defaults
@@ -347,10 +350,11 @@ sed -i -e 's/fade-in/charge/g' src/plymouthd.defaults
 	--enable-gdm-transition \
 	--enable-systemd-integration \
 	--enable-tracing \
-	--with-background-start-color-stop=0x003194 \
-	--with-background-end-color-stop=0x000063 \
-	--with-background-color=0x0063c6 \
+	--with-background-start-color-stop=0x009431 \
+	--with-background-end-color-stop=0x006300 \
+	--with-background-color=0x00c663 \
 	--with-logo=%{_pixmapsdir}/plymouth-logo.png \
+	--with-release-file=/etc/os-release \
 	--with-system-root-install
 
 %{__make}
