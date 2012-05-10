@@ -7,7 +7,7 @@ Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
 Version:	0.8.4
-Release:	3
+Release:	4
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
