@@ -1,8 +1,6 @@
 # TODO
-# - revisit subpackages
-# - fix: Requires: /bin/bash
 # - integrate with geninitrd
-# - pldize recent update
+# - pldize recent update (r1.18)
 Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
