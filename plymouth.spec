@@ -19,6 +19,7 @@ Source5:	%{name}-set-default-plugin
 Source6:	%{name}-update-initrd
 Patch0:		check_for_consoles.patch
 Patch1:		text-colors.patch
+Patch2:		libdrm-2.4.34.patch
 URL:		http://www.freedesktop.org/wiki/Software/Plymouth
 #BuildRequires:	autoconf >= 2.50
 #BuildRequires:	automake
@@ -336,6 +337,7 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 %setup -q
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 # Change the default theme
 sed -i -e 's/fade-in/charge/g' src/plymouthd.defaults
