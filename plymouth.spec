@@ -11,12 +11,12 @@
 Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
-Version:	0.8.4
-Release:	5
+Version:	0.8.5.1
+Release:	1
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
-# Source0-md5:	6f370cd69bd6d0c67657d243a99dc260
+# Source0-md5:	76714ebe125991f59b8a5029070f9b83
 Source1:	%{name}-logo.png
 # Source1-md5:	6b38a868585adfd3a96a4ad16973c1f8
 Source2:	%{name}.tmpfiles
@@ -24,15 +24,14 @@ Source3:	charge.%{name}
 Source4:	boot-duration
 Source5:	%{name}-set-default-plugin
 Source6:	%{name}-update-initrd
-Patch0:		check_for_consoles.patch
-Patch1:		text-colors.patch
+Patch0:		text-colors.patch
 URL:		http://www.freedesktop.org/wiki/Software/Plymouth
 BuildRequires:	cairo-devel
 BuildRequires:	gtk+2-devel >= 2:2.12.0
 %if %{with drm_intel} ||  %{with drm_radeon} ||  %{with drm_nouveau} ||  %{with kms}
 BuildRequires:	libdrm-devel
 %endif
-BuildRequires:	libpng-devel >= 1.2.16
+BuildRequires:	libpng-devel >= 2:1.2.16
 BuildRequires:	pango-devel >= 1:1.21.0
 BuildRequires:	pkgconfig
 Requires:	%{name}-graphics-libs = %{version}-%{release}
@@ -341,7 +340,6 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 %prep
 %setup -q
 %patch0 -p1
-%patch1 -p1
 
 # Change the default theme
 sed -i -e 's/fade-in/charge/g' src/plymouthd.defaults
@@ -444,6 +442,15 @@ fi
 %ghost %{_localstatedir}/lib/plymouth/boot-duration
 %{_localstatedir}/run/plymouth
 %{_localstatedir}/spool/plymouth
+# currently packaged in systemd-plymouth
+#%{systemdunitdir}/plymouth-halt.service
+#%{systemdunitdir}/plymouth-kexec.service
+#%{systemdunitdir}/plymouth-poweroff.service
+#%{systemdunitdir}/plymouth-quit-wait.service
+#%{systemdunitdir}/plymouth-quit.service
+#%{systemdunitdir}/plymouth-read-write.service
+#%{systemdunitdir}/plymouth-reboot.service
+#%{systemdunitdir}/plymouth-start.service
 
 %files core-libs
 %defattr(644,root,root,755)
