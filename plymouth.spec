@@ -1,6 +1,8 @@
 # TODO
 # - integrate with geninitrd
 # - pldize recent update (r1.18)
+# - verify if systemd services have to be installed for targets,
+#	and remove the symlinks if not
 #
 # Conditional build:
 %bcond_without	drm_intel	# disable building with libdrm_intel support
@@ -24,6 +26,8 @@ Source3:	charge.%{name}
 Source4:	boot-duration
 Source5:	%{name}-set-default-plugin
 Source6:	%{name}-update-initrd
+Source7:	systemd-ask-password-plymouth.path
+Source8:	systemd-ask-password-plymouth.service
 Patch0:		text-colors.patch
 URL:		http://www.freedesktop.org/wiki/Software/Plymouth
 BuildRequires:	cairo-devel
@@ -37,9 +41,10 @@ BuildRequires:	pkgconfig
 Requires:	%{name}-graphics-libs = %{version}-%{release}
 Requires(post):	%{name}-scripts = %{version}-%{release}
 Requires:	/etc/os-release
-Requires:	systemd-plymouth
+Requires:	systemd-units
 Obsoletes:	plymouth-gdm-hooks
 Obsoletes:	plymouth-utils
+Obsoletes:	systemd-plymouth
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		plymouthdaemon_execdir	/sbin
@@ -369,6 +374,7 @@ sed -i -e 's/fade-in/charge/g' src/plymouthd.defaults
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_bindir},%{_pixmapsdir},%{systemdtmpfilesdir}}
+
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
@@ -401,6 +407,21 @@ install -d $RPM_BUILD_ROOT%{_localstatedir}/lib/plymouth
 
 cp -p %{SOURCE1} $RPM_BUILD_ROOT%{_pixmapsdir}/plymouth-logo.png
 cp -p %{SOURCE2} $RPM_BUILD_ROOT%{systemdtmpfilesdir}/%{name}.conf
+
+cp -p %{SOURCE7} $RPM_BUILD_ROOT%{systemdunitdir}/systemd-ask-password-plymouth.path
+cp -p %{SOURCE8} $RPM_BUILD_ROOT%{systemdunitdir}/systemd-ask-password-plymouth.service
+
+# install plymouth services for targets
+# http://cgit.freedesktop.org/systemd/systemd/commit/?id=26cbf29c52a36b6ad9d1ccc16d8f7adccefeddca
+install -d $RPM_BUILD_ROOT%{systemdunitdir}/{halt,kexec,poweroff,reboot,sysinit,multi-user}.target.wants
+ln -sf ../plymouth-start.service $RPM_BUILD_ROOT%{systemdunitdir}/sysinit.target.wants/plymouth-start.service
+ln -sf ../plymouth-read-write.service $RPM_BUILD_ROOT%{systemdunitdir}/sysinit.target.wants/plymouth-read-write.service
+ln -sf ../plymouth-quit.service $RPM_BUILD_ROOT%{systemdunitdir}/multi-user.target.wants/plymouth-quit.service
+ln -sf ../plymouth-quit-wait.service $RPM_BUILD_ROOT%{systemdunitdir}/multi-user.target.wants/plymouth-quit-wait.service
+ln -sf ../plymouth-reboot.service $RPM_BUILD_ROOT%{systemdunitdir}/reboot.target.wants/plymouth-reboot.service
+ln -sf ../plymouth-kexec.service $RPM_BUILD_ROOT%{systemdunitdir}/kexec.target.wants/plymouth-kexec.service
+ln -sf ../plymouth-poweroff.service $RPM_BUILD_ROOT%{systemdunitdir}/poweroff.target.wants/plymouth-poweroff.service
+ln -sf ../plymouth-halt.service $RPM_BUILD_ROOT%{systemdunitdir}/halt.target.wants/plymouth-halt.service
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -442,15 +463,25 @@ fi
 %ghost %{_localstatedir}/lib/plymouth/boot-duration
 %{_localstatedir}/run/plymouth
 %{_localstatedir}/spool/plymouth
-# currently packaged in systemd-plymouth
-#%{systemdunitdir}/plymouth-halt.service
-#%{systemdunitdir}/plymouth-kexec.service
-#%{systemdunitdir}/plymouth-poweroff.service
-#%{systemdunitdir}/plymouth-quit-wait.service
-#%{systemdunitdir}/plymouth-quit.service
-#%{systemdunitdir}/plymouth-read-write.service
-#%{systemdunitdir}/plymouth-reboot.service
-#%{systemdunitdir}/plymouth-start.service
+
+%{systemdunitdir}/plymouth-halt.service
+%{systemdunitdir}/plymouth-kexec.service
+%{systemdunitdir}/plymouth-poweroff.service
+%{systemdunitdir}/plymouth-quit-wait.service
+%{systemdunitdir}/plymouth-quit.service
+%{systemdunitdir}/plymouth-read-write.service
+%{systemdunitdir}/plymouth-reboot.service
+%{systemdunitdir}/plymouth-start.service
+%{systemdunitdir}/systemd-ask-password-plymouth.path
+%{systemdunitdir}/systemd-ask-password-plymouth.service
+%{systemdunitdir}/halt.target.wants/plymouth-halt.service
+%{systemdunitdir}/kexec.target.wants/plymouth-kexec.service
+%{systemdunitdir}/multi-user.target.wants/plymouth-quit.service
+%{systemdunitdir}/multi-user.target.wants/plymouth-quit-wait.service
+%{systemdunitdir}/poweroff.target.wants/plymouth-poweroff.service
+%{systemdunitdir}/reboot.target.wants/plymouth-reboot.service
+%{systemdunitdir}/sysinit.target.wants/plymouth-read-write.service
+%{systemdunitdir}/sysinit.target.wants/plymouth-start.service
 
 %files core-libs
 %defattr(644,root,root,755)
