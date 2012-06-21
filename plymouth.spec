@@ -426,10 +426,14 @@ ln -sf ../plymouth-halt.service $RPM_BUILD_ROOT%{systemdunitdir}/halt.target.wan
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%post
+%systemd_reload
+
 %postun
 if [ $1 -eq 0 ]; then
 	rm -f %{_libdir}/plymouth/default.so
 fi
+%systemd_reload
 
 %post	core-libs -p /sbin/ldconfig
 %postun	core-libs -p /sbin/ldconfig
