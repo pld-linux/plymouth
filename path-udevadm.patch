@@ -1,0 +1,9 @@
+--- plymouth-0.8.5.1/./systemd-units/plymouth-start.service.in~	2012-06-06 21:25:04.000000000 +0300
++++ plymouth-0.8.5.1/./systemd-units/plymouth-start.service.in	2012-07-20 13:53:52.292978173 +0300
+@@ -9,5 +9,5 @@
+ 
+ [Service]
+ ExecStart=@PLYMOUTH_DAEMON_DIR@/plymouthd --mode=boot --pid-file=@plymouthruntimedir@/pid --attach-to-session
+-ExecStartPost=-/bin/udevadm trigger --action=add --attr-match=class=0x030000 ; -/bin/udevadm trigger --action=add --subsystem-match=graphics --subsystem-match=drm --subsystem-match=tty ; -/bin/udevadm settle --timeout=30 ; -@PLYMOUTH_CLIENT_DIR@/plymouth show-splash
++ExecStartPost=-/sbin/udevadm trigger --action=add --attr-match=class=0x030000 ; -/sbin/udevadm trigger --action=add --subsystem-match=graphics --subsystem-match=drm --subsystem-match=tty ; -/sbin/udevadm settle --timeout=30 ; -@PLYMOUTH_CLIENT_DIR@/plymouth show-splash
+ Type=forking

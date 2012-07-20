@@ -9,12 +9,12 @@
 %bcond_without	drm_radeon	# disable building with libdrm_radeon support
 %bcond_with	drm_nouveau	# enable building with libdrm_nouveau support
 %bcond_without	kms		# disable building with libkms support
-#
+
 Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
 Version:	0.8.5.1
-Release:	1
+Release:	2
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
@@ -29,6 +29,7 @@ Source6:	%{name}-update-initrd
 Source7:	systemd-ask-password-plymouth.path
 Source8:	systemd-ask-password-plymouth.service
 Patch0:		text-colors.patch
+Patch1:		path-udevadm.patch
 URL:		http://www.freedesktop.org/wiki/Software/Plymouth
 BuildRequires:	cairo-devel
 BuildRequires:	gtk+2-devel >= 2:2.12.0
@@ -345,6 +346,7 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 
 # Change the default theme
 sed -i -e 's/fade-in/charge/g' src/plymouthd.defaults
