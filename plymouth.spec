@@ -14,7 +14,7 @@ Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
 Version:	0.8.8
-Release:	2
+Release:	3
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
@@ -482,6 +482,7 @@ fi
 %{systemdunitdir}/systemd-ask-password-plymouth.path
 %{systemdunitdir}/systemd-ask-password-plymouth.service
 %{systemdunitdir}/halt.target.wants/plymouth-halt.service
+%dir %{systemdunitdir}/initrd-switch-root.target.wants
 %{systemdunitdir}/initrd-switch-root.target.wants/plymouth-switch-root.service
 %{systemdunitdir}/kexec.target.wants/plymouth-kexec.service
 %{systemdunitdir}/multi-user.target.wants/plymouth-quit.service
