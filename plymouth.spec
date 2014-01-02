@@ -14,7 +14,7 @@ Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
 Version:	0.8.8
-Release:	5
+Release:	6
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
@@ -30,12 +30,14 @@ Source7:	systemd-ask-password-plymouth.path
 Source8:	systemd-ask-password-plymouth.service
 Patch0:		text-colors.patch
 Patch1:		path-udevadm.patch
+Patch2:		%{name}-restore-suspend.patch
 URL:		http://www.freedesktop.org/wiki/Software/Plymouth
 BuildRequires:	cairo-devel
 BuildRequires:	gtk+2-devel >= 2:2.12.0
 %if %{with drm_intel} ||  %{with drm_radeon} ||  %{with drm_nouveau} ||  %{with kms}
 BuildRequires:	libdrm-devel
 %endif
+BuildRequires:	xorg-lib-libpciaccess-devel
 BuildRequires:	libpng-devel >= 2:1.2.16
 BuildRequires:	pango-devel >= 1:1.21.0
 BuildRequires:	pkgconfig
@@ -347,6 +349,7 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 %setup -q
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 # Change the default theme
 sed -i -e 's/fade-in/charge/g' src/plymouthd.defaults
