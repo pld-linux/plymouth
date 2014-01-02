@@ -14,7 +14,7 @@ Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
 Version:	0.8.8
-Release:	6
+Release:	7
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
@@ -49,10 +49,6 @@ Obsoletes:	plymouth-gdm-hooks
 Obsoletes:	plymouth-utils
 Obsoletes:	systemd-plymouth
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
-
-%define		plymouthdaemon_execdir	/sbin
-%define		plymouthclient_execdir	/bin
-%define		plymouth_libdir		/%{_lib}
 
 %description
 Plymouth provides an attractive graphical boot animation in place of
@@ -378,10 +374,14 @@ sed -i -e 's/fade-in/charge/g' src/plymouthd.defaults
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_bindir},%{_pixmapsdir},%{systemdtmpfilesdir}}
+install -d $RPM_BUILD_ROOT{%{_bindir},%{_libdir},%{_pixmapsdir},%{systemdtmpfilesdir}}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
+
+ln -sf /%{_lib}/$(basename $RPM_BUILD_ROOT/%{_lib}/libply.so.*.*.*) $RPM_BUILD_ROOT%{_libdir}/libply.so
+ln -sf /%{_lib}/$(basename $RPM_BUILD_ROOT/%{_lib}/libply-splash-core.so.*.*.*) $RPM_BUILD_ROOT%{_libdir}/libply-splash-core.so
+%{__rm} $RPM_BUILD_ROOT/%{_lib}/libply{,-splash-core}.so
 
 install -d $RPM_BUILD_ROOT%{_localstatedir}/lib/plymouth
 cp -p %{SOURCE4} $RPM_BUILD_ROOT%{_datadir}/plymouth/default-boot-duration
@@ -401,7 +401,7 @@ cp -p %{SOURCE6} $RPM_BUILD_ROOT%{_libdir}/plymouth/plymouth-update-initrd
 # FC: Add compat script for upgrades
 install -p %{SOURCE5} $RPM_BUILD_ROOT%{_sbindir}
 
-%{__rm} $RPM_BUILD_ROOT{%{plymouth_libdir},%{_libdir}}/*.la \
+%{__rm} $RPM_BUILD_ROOT{/%{_lib},%{_libdir}}/*.la \
 	$RPM_BUILD_ROOT%{_libdir}/plymouth/*.la \
 	$RPM_BUILD_ROOT%{_libdir}/plymouth/renderers/*.la
 
@@ -452,8 +452,8 @@ fi
 %dir %{_sysconfdir}/plymouth
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/plymouth/plymouthd.conf
 %{_mandir}/man8/plymouth.8*
-%attr(755,root,root) %{plymouthdaemon_execdir}/plymouthd
-%attr(755,root,root) %{plymouthclient_execdir}/plymouth
+%attr(755,root,root) /bin/plymouth
+%attr(755,root,root) /sbin/plymouthd
 %attr(755,root,root) %{_libdir}/plymouth/details.so
 %attr(755,root,root) %{_libdir}/plymouth/text.so
 %attr(755,root,root) %{_libdir}/plymouth/renderers/drm.so
@@ -497,10 +497,10 @@ fi
 
 %files core-libs
 %defattr(644,root,root,755)
-%attr(755,root,root) %{plymouth_libdir}/libply.so.*.*.*
-%attr(755,root,root) %ghost %{plymouth_libdir}/libply.so.2
-%attr(755,root,root) %{plymouth_libdir}/libply-splash-core.so.*.*.*
-%attr(755,root,root) %ghost %{plymouth_libdir}/libply-splash-core.so.2
+%attr(755,root,root) /%{_lib}/libply.so.*.*.*
+%attr(755,root,root) %ghost /%{_lib}/libply.so.2
+%attr(755,root,root) /%{_lib}/libply-splash-core.so.*.*.*
+%attr(755,root,root) %ghost /%{_lib}/libply-splash-core.so.2
 %attr(755,root,root) %{_libdir}/libply-boot-client.so.*.*.*
 %attr(755,root,root) %ghost %{_libdir}/libply-boot-client.so.2
 %dir %{_libdir}/plymouth
@@ -514,9 +514,9 @@ fi
 
 %files devel
 %defattr(644,root,root,755)
-%attr(755,root,root) %{plymouth_libdir}/libply.so
-%attr(755,root,root) %{plymouth_libdir}/libply-splash-core.so
+%attr(755,root,root) %{_libdir}/libply.so
 %attr(755,root,root) %{_libdir}/libply-boot-client.so
+%attr(755,root,root) %{_libdir}/libply-splash-core.so
 %attr(755,root,root) %{_libdir}/libply-splash-graphics.so
 %{_includedir}/plymouth-1
 %{_pkgconfigdir}/ply-boot-client.pc
