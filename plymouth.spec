@@ -14,7 +14,7 @@ Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
 Version:	0.8.8
-Release:	7
+Release:	8
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
@@ -105,6 +105,20 @@ libraries needed to develop 3rd party splash plugins for Plymouth.
 %description devel -l pl.UTF-8
 Ten pakiet zawiera pliki nagłówkowe bibliotek libply i
 libplybootsplash, potrzebne do tworzenia wtyczek graficznych Plymouth.
+
+%package static
+Summary:	Static libraries for writing Plymouth splash plugins
+Summary(pl.UTF-8):	Statyczne biblioteki do tworzenia wtyczek graficznych Plymouth
+Group:		Development/Libraries
+Requires:	%{name}-devel = %{version}-%{release}
+
+%description static
+This package contains the static libraries used to develop 3rd party
+splash plugins for Plymouth.
+
+%description static -l pl.UTF-8
+Ten pakiet zawiera statyczne biblioteki, przydatne do tworzenia
+wtyczek graficznych Plymouth.
 
 %package scripts
 Summary:	Plymouth related scripts
@@ -357,7 +371,6 @@ sed -i -e 's/fade-in/charge/g' src/plymouthd.defaults
 	%{__enable_disable drm_nouveau libdrm_nouveau} \
 	%{__enable_disable kms libkms} \
 	--disable-silent-rules \
-	--disable-static \
 	--disable-tests \
 	--disable-gdm-transition \
 	--enable-systemd-integration \
@@ -379,6 +392,7 @@ install -d $RPM_BUILD_ROOT{%{_bindir},%{_libdir},%{_pixmapsdir},%{systemdtmpfile
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
+%{__mv} $RPM_BUILD_ROOT/%{_lib}/lib*.a $RPM_BUILD_ROOT%{_libdir}
 ln -sf /%{_lib}/$(basename $RPM_BUILD_ROOT/%{_lib}/libply.so.*.*.*) $RPM_BUILD_ROOT%{_libdir}/libply.so
 ln -sf /%{_lib}/$(basename $RPM_BUILD_ROOT/%{_lib}/libply-splash-core.so.*.*.*) $RPM_BUILD_ROOT%{_libdir}/libply-splash-core.so
 %{__rm} $RPM_BUILD_ROOT/%{_lib}/libply{,-splash-core}.so
@@ -402,8 +416,8 @@ cp -p %{SOURCE6} $RPM_BUILD_ROOT%{_libdir}/plymouth/plymouth-update-initrd
 install -p %{SOURCE5} $RPM_BUILD_ROOT%{_sbindir}
 
 %{__rm} $RPM_BUILD_ROOT{/%{_lib},%{_libdir}}/*.la \
-	$RPM_BUILD_ROOT%{_libdir}/plymouth/*.la \
-	$RPM_BUILD_ROOT%{_libdir}/plymouth/renderers/*.la
+	$RPM_BUILD_ROOT%{_libdir}/plymouth/*.{a,la} \
+	$RPM_BUILD_ROOT%{_libdir}/plymouth/renderers/*.{a,la}
 
 # Temporary symlink until rc.sysinit is fixed
 ln -sf /bin/plymouth $RPM_BUILD_ROOT%{_bindir}/plymouth
@@ -522,6 +536,13 @@ fi
 %{_pkgconfigdir}/ply-boot-client.pc
 %{_pkgconfigdir}/ply-splash-core.pc
 %{_pkgconfigdir}/ply-splash-graphics.pc
+
+%files static
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libply.a
+%attr(755,root,root) %{_libdir}/libply-boot-client.a
+%attr(755,root,root) %{_libdir}/libply-splash-core.a
+%attr(755,root,root) %{_libdir}/libply-splash-graphics.a
 
 %files scripts
 %defattr(644,root,root,755)
