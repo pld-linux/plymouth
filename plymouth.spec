@@ -350,6 +350,9 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 %patch0 -p1
 %patch1 -p1
 
+# Change the default theme
+sed -i -e 's/Theme=.*/Theme=tribar/g' src/plymouthd.defaults
+
 %build
 %{__aclocal}
 %{__autoconf}
