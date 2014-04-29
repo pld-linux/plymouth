@@ -1,20 +1,15 @@
 # TODO
 # - integrate with geninitrd
 # - pldize recent update (r1.18)
-# - verify if systemd services have to be installed for targets,
-#	and remove the symlinks if not
 #
 # Conditional build:
-%bcond_without	drm_intel	# disable building with libdrm_intel support
-%bcond_without	drm_radeon	# disable building with libdrm_radeon support
-%bcond_with	drm_nouveau	# enable building with libdrm_nouveau support
-%bcond_without	kms		# disable building with libkms support
+%bcond_without	drm		# disable building with DRM renderer support
 
 Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
 Version:	0.8.8
-Release:	8
+Release:	9
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
@@ -22,25 +17,20 @@ Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version
 Source1:	%{name}-logo.png
 # Source1-md5:	6b38a868585adfd3a96a4ad16973c1f8
 Source2:	%{name}.tmpfiles
-Source3:	charge.%{name}
 Source4:	boot-duration
-Source5:	%{name}-set-default-plugin
 Source6:	%{name}-update-initrd
-Source7:	systemd-ask-password-plymouth.path
-Source8:	systemd-ask-password-plymouth.service
 Patch0:		text-colors.patch
-Patch1:		path-udevadm.patch
-Patch2:		%{name}-restore-suspend.patch
+Patch1:		%{name}-restore-suspend.patch
+Patch100:	%{name}-git.patch
 URL:		http://www.freedesktop.org/wiki/Software/Plymouth
 BuildRequires:	cairo-devel
 BuildRequires:	gtk+2-devel >= 2:2.12.0
-%if %{with drm_intel} ||  %{with drm_radeon} ||  %{with drm_nouveau} ||  %{with kms}
-BuildRequires:	libdrm-devel
-%endif
 BuildRequires:	xorg-lib-libpciaccess-devel
+%{?with_drm:BuildRequires:	libdrm-devel}
 BuildRequires:	libpng-devel >= 2:1.2.16
 BuildRequires:	pango-devel >= 1:1.21.0
 BuildRequires:	pkgconfig
+BuildRequires:	udev-devel
 Requires:	%{name}-graphics-libs = %{version}-%{release}
 Requires(post):	%{name}-scripts = %{version}-%{release}
 Requires:	/etc/os-release
@@ -253,23 +243,22 @@ This metapackage tracks the current distribution default theme.
 %description system-theme -l pl.UTF-8
 Ten metapakiet śledzi domyślny motyw dystrybucji.
 
-%package theme-charge
-Summary:	Plymouth "Charge" theme
-Summary(pl.UTF-8):	Motyw Plymouth "Charge"
+%package theme-glow
+Summary:	Plymouth "Glow" theme
+Summary(pl.UTF-8):	Motyw Plymouth "Glow"
 Group:		Base
 Requires:	%{name}-plugin-two-step = %{version}-%{release}
 Requires(post):	%{name}-scripts = %{version}-%{release}
 Provides:	%{name}(system-theme) = %{version}-%{release}
+Obsoletes:	plymouth-theme-charge
 
-%description theme-charge
-This package contains the "charge" boot splash theme for Plymouth. It
-features the shadowy hull of a Fedora logo charge up and and finally
-burst into full form.
+%description theme-glow
+This package contains the "Glow" boot splash theme for Plymouth.
+Corporate theme with pie chart boot progress followed by a glowing
+emerging logo.
 
-%description theme-charge -l pl.UTF-8
-Ten pakiet zawiera motyw ekranu startowego Plymouth "Charge". Odznacza
-się on cieniowaną łupiną loga Fedory, która rośnie, a ostatecznie
-wybucha do pełnej postaci.
+%description theme-glow -l pl.UTF-8
+Ten pakiet zawiera motyw ekranu startowego Plymouth "Glow".
 
 %package theme-fade-in
 Summary:	Plymouth "Fade-In" theme
@@ -357,21 +346,21 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 
 %prep
 %setup -q
+%patch100 -p1
 %patch0 -p1
 %patch1 -p1
-%patch2 -p1
-
-# Change the default theme
-sed -i -e 's/fade-in/charge/g' src/plymouthd.defaults
 
 %build
+%{__aclocal}
+%{__autoconf}
+%{__autoheader}
+%{__automake}
 %configure \
-	%{__enable_disable drm_intel libdrm_intel} \
-	%{__enable_disable drm_radeon libdrm_radeon} \
-	%{__enable_disable drm_nouveau libdrm_nouveau} \
-	%{__enable_disable kms libkms} \
+	UDEVADM=/sbin/udevadm \
+	SYSTEMD_ASK_PASSWORD_AGENT=/bin/systemd-tty-ask-password-agent \
+	%{__enable_disable drm drm} \
 	--disable-silent-rules \
-	--disable-tests \
+	--enable-documentation \
 	--disable-gdm-transition \
 	--enable-systemd-integration \
 	--enable-tracing \
@@ -392,7 +381,6 @@ install -d $RPM_BUILD_ROOT{%{_bindir},%{_libdir},%{_pixmapsdir},%{systemdtmpfile
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
-%{__mv} $RPM_BUILD_ROOT/%{_lib}/lib*.a $RPM_BUILD_ROOT%{_libdir}
 ln -sf /%{_lib}/$(basename $RPM_BUILD_ROOT/%{_lib}/libply.so.*.*.*) $RPM_BUILD_ROOT%{_libdir}/libply.so
 ln -sf /%{_lib}/$(basename $RPM_BUILD_ROOT/%{_lib}/libply-splash-core.so.*.*.*) $RPM_BUILD_ROOT%{_libdir}/libply-splash-core.so
 %{__rm} $RPM_BUILD_ROOT/%{_lib}/libply{,-splash-core}.so
@@ -401,46 +389,17 @@ install -d $RPM_BUILD_ROOT%{_localstatedir}/lib/plymouth
 cp -p %{SOURCE4} $RPM_BUILD_ROOT%{_datadir}/plymouth/default-boot-duration
 > $RPM_BUILD_ROOT%{_localstatedir}/lib/plymouth/boot-duration
 
-# FC: Add charge, our new default
-install -d $RPM_BUILD_ROOT%{_datadir}/plymouth/themes/charge
-cp %{SOURCE3} $RPM_BUILD_ROOT%{_datadir}/plymouth/themes/charge
-cp $RPM_BUILD_ROOT%{_datadir}/plymouth/themes/glow/{box,bullet,entry,lock}.png $RPM_BUILD_ROOT%{_datadir}/plymouth/themes/charge
-
-# FC: Drop glow, it's not very Fedora-y
-%{__rm} -r $RPM_BUILD_ROOT%{_datadir}/plymouth/themes/glow
-
-# FC: Override plymouth-update-initrd to work dracut or mkinitrd
+# Override plymouth-update-initrd to work with dracut or mkinitrd
 cp -p %{SOURCE6} $RPM_BUILD_ROOT%{_libdir}/plymouth/plymouth-update-initrd
 
-# FC: Add compat script for upgrades
-install -p %{SOURCE5} $RPM_BUILD_ROOT%{_sbindir}
-
 %{__rm} $RPM_BUILD_ROOT{/%{_lib},%{_libdir}}/*.la \
-	$RPM_BUILD_ROOT%{_libdir}/plymouth/*.{a,la} \
-	$RPM_BUILD_ROOT%{_libdir}/plymouth/renderers/*.{a,la}
-
-# Temporary symlink until rc.sysinit is fixed
-ln -sf /bin/plymouth $RPM_BUILD_ROOT%{_bindir}/plymouth
+	$RPM_BUILD_ROOT%{_libdir}/plymouth/*.la \
+	$RPM_BUILD_ROOT%{_libdir}/plymouth/renderers/*.la
 
 install -d $RPM_BUILD_ROOT%{_localstatedir}/lib/plymouth
 
 cp -p %{SOURCE1} $RPM_BUILD_ROOT%{_pixmapsdir}/plymouth-logo.png
 cp -p %{SOURCE2} $RPM_BUILD_ROOT%{systemdtmpfilesdir}/%{name}.conf
-
-cp -p %{SOURCE7} $RPM_BUILD_ROOT%{systemdunitdir}/systemd-ask-password-plymouth.path
-cp -p %{SOURCE8} $RPM_BUILD_ROOT%{systemdunitdir}/systemd-ask-password-plymouth.service
-
-# install plymouth services for targets
-# http://cgit.freedesktop.org/systemd/systemd/commit/?id=26cbf29c52a36b6ad9d1ccc16d8f7adccefeddca
-install -d $RPM_BUILD_ROOT%{systemdunitdir}/{halt,kexec,poweroff,reboot,sysinit,multi-user}.target.wants
-ln -sf ../plymouth-start.service $RPM_BUILD_ROOT%{systemdunitdir}/sysinit.target.wants/plymouth-start.service
-ln -sf ../plymouth-read-write.service $RPM_BUILD_ROOT%{systemdunitdir}/sysinit.target.wants/plymouth-read-write.service
-ln -sf ../plymouth-quit.service $RPM_BUILD_ROOT%{systemdunitdir}/multi-user.target.wants/plymouth-quit.service
-ln -sf ../plymouth-quit-wait.service $RPM_BUILD_ROOT%{systemdunitdir}/multi-user.target.wants/plymouth-quit-wait.service
-ln -sf ../plymouth-reboot.service $RPM_BUILD_ROOT%{systemdunitdir}/reboot.target.wants/plymouth-reboot.service
-ln -sf ../plymouth-kexec.service $RPM_BUILD_ROOT%{systemdunitdir}/kexec.target.wants/plymouth-kexec.service
-ln -sf ../plymouth-poweroff.service $RPM_BUILD_ROOT%{systemdunitdir}/poweroff.target.wants/plymouth-poweroff.service
-ln -sf ../plymouth-halt.service $RPM_BUILD_ROOT%{systemdunitdir}/halt.target.wants/plymouth-halt.service
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -462,7 +421,6 @@ fi
 %files
 %defattr(644,root,root,755)
 %doc AUTHORS README TODO
-%attr(755,root,root) %{_bindir}/plymouth
 %dir %{_sysconfdir}/plymouth
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/plymouth/plymouthd.conf
 %{_mandir}/man8/plymouth.8*
@@ -470,22 +428,27 @@ fi
 %attr(755,root,root) /sbin/plymouthd
 %attr(755,root,root) %{_libdir}/plymouth/details.so
 %attr(755,root,root) %{_libdir}/plymouth/text.so
+%attr(755,root,root) %{_libdir}/plymouth/tribar.so
 %attr(755,root,root) %{_libdir}/plymouth/renderers/drm.so
 %attr(755,root,root) %{_libdir}/plymouth/renderers/frame-buffer.so
 %dir %{_datadir}/plymouth
 %dir %{_datadir}/plymouth/themes
 %dir %{_datadir}/plymouth/themes/details
 %dir %{_datadir}/plymouth/themes/text
+%dir %{_datadir}/plymouth/themes/tribar
 %{_datadir}/plymouth/plymouthd.defaults
 %{_datadir}/plymouth/default-boot-duration
 %{_datadir}/plymouth/themes/details/details.plymouth
 %{_datadir}/plymouth/themes/text/text.plymouth
+%{_datadir}/plymouth/themes/tribar/tribar.plymouth
 %{_pixmapsdir}/plymouth-logo.png
 %{systemdtmpfilesdir}/%{name}.conf
 %dir %{_localstatedir}/lib/plymouth
 %ghost %{_localstatedir}/lib/plymouth/boot-duration
 %{_localstatedir}/run/plymouth
 %{_localstatedir}/spool/plymouth
+%{_mandir}/man1/plymouth.1*
+%{_mandir}/man8/plymouthd.8*
 
 %{systemdunitdir}/plymouth-halt.service
 %{systemdunitdir}/plymouth-kexec.service
@@ -501,6 +464,7 @@ fi
 %{systemdunitdir}/halt.target.wants/plymouth-halt.service
 %dir %{systemdunitdir}/initrd-switch-root.target.wants
 %{systemdunitdir}/initrd-switch-root.target.wants/plymouth-switch-root.service
+%{systemdunitdir}/initrd-switch-root.target.wants/plymouth-start.service
 %{systemdunitdir}/kexec.target.wants/plymouth-kexec.service
 %{systemdunitdir}/multi-user.target.wants/plymouth-quit.service
 %{systemdunitdir}/multi-user.target.wants/plymouth-quit-wait.service
@@ -537,20 +501,13 @@ fi
 %{_pkgconfigdir}/ply-splash-core.pc
 %{_pkgconfigdir}/ply-splash-graphics.pc
 
-%files static
-%defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/libply.a
-%attr(755,root,root) %{_libdir}/libply-boot-client.a
-%attr(755,root,root) %{_libdir}/libply-splash-core.a
-%attr(755,root,root) %{_libdir}/libply-splash-graphics.a
-
 %files scripts
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_sbindir}/plymouth-set-default-plugin
 %attr(755,root,root) %{_sbindir}/plymouth-set-default-theme
 %attr(755,root,root) %{_libdir}/plymouth/plymouth-generate-initrd
 %attr(755,root,root) %{_libdir}/plymouth/plymouth-populate-initrd
 %attr(755,root,root) %{_libdir}/plymouth/plymouth-update-initrd
+%{_mandir}/man1/plymouth-set-default-theme.1*
 
 %files plugin-fade-throbber
 %defattr(644,root,root,755)
@@ -579,11 +536,11 @@ fi
 %files system-theme
 %defattr(644,root,root,755)
 
-%files theme-charge
+%files theme-glow
 %defattr(644,root,root,755)
-%dir %{_datadir}/plymouth/themes/charge
-%{_datadir}/plymouth/themes/charge/*.png
-%{_datadir}/plymouth/themes/charge/charge.plymouth
+%dir %{_datadir}/plymouth/themes/glow
+%{_datadir}/plymouth/themes/glow/*.png
+%{_datadir}/plymouth/themes/glow/glow.plymouth
 
 %files theme-fade-in
 %defattr(644,root,root,755)

@@ -1,5 +1,5 @@
---- plymouth-0.8.4/src/plugins/splash/text/plugin.c~	2011-02-09 21:07:14.000000000 +0100
-+++ plymouth-0.8.4/src/plugins/splash/text/plugin.c	2012-04-27 12:56:30.461837997 +0200
+--- plymouth-0.8.4/src/plugins/splash/tribar/plugin.c~	2011-02-09 21:07:14.000000000 +0100
++++ plymouth-0.8.4/src/plugins/splash/tribar/plugin.c	2012-04-27 12:56:30.461837997 +0200
 @@ -183,10 +183,10 @@
                                      0xffffff);
    ply_terminal_set_color_hex_value (terminal,
@@ -9,6 +9,21 @@
    ply_terminal_set_color_hex_value (terminal,
                                      PLY_TERMINAL_COLOR_BROWN,
 -                                    0x00457E);
++                                    PLYMOUTH_BACKGROUND_END_COLOR);
+ 
+   ply_text_display_set_background_color (view->display,
+                                          PLY_TERMINAL_COLOR_BLACK);
+--- plymouth-0.8.8/src/plugins/splash/text/plugin.c~	2014-04-29 18:42:57.000000000 +0200
++++ plymouth-0.8.8/src/plugins/splash/text/plugin.c	2014-04-29 18:55:53.714017941 +0200
+@@ -177,10 +177,10 @@
+                                     0xffffff);
+   ply_terminal_set_color_hex_value (terminal,
+                                     PLY_TERMINAL_COLOR_BLUE,
+-                                    0x3465a4);
++                                    PLYMOUTH_BACKGROUND_START_COLOR);
+   ply_terminal_set_color_hex_value (terminal,
+                                     PLY_TERMINAL_COLOR_BROWN,
+-                                    0x979a9b);
 +                                    PLYMOUTH_BACKGROUND_END_COLOR);
  
    ply_text_display_set_background_color (view->display,
