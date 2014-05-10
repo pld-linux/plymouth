@@ -23,6 +23,8 @@ Patch0:		text-colors.patch
 Patch1:		%{name}-restore-suspend.patch
 Patch100:	%{name}-git.patch
 URL:		http://www.freedesktop.org/wiki/Software/Plymouth
+BuildRequires:	autoconf >= 2.50
+BuildRequires:	automake >= 1:1.11
 BuildRequires:	cairo-devel
 BuildRequires:	gtk+2-devel >= 2:2.12.0
 BuildRequires:	xorg-lib-libpciaccess-devel
