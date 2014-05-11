@@ -9,7 +9,7 @@ Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
 Version:	0.8.8
-Release:	9
+Release:	10
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
@@ -353,7 +353,7 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 %patch1 -p1
 
 # Change the default theme
-sed -i -e 's/Theme=.*/Theme=tribar/g' src/plymouthd.defaults
+%{__sed} -i -e 's/Theme=.*/Theme=tribar/ig' -e 's/ShowDelay=.*//ig' src/plymouthd.defaults
 
 %build
 %{__aclocal}
