@@ -8,12 +8,12 @@
 Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
-Version:	0.8.8
-Release:	10
+Version:	0.9.0
+Release:	1
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
-# Source0-md5:	38f5e613e5ab17806b950cee2d0d0d4e
+# Source0-md5:	147150705417f025d036304e97e33c9c
 Source1:	%{name}-logo.png
 # Source1-md5:	6b38a868585adfd3a96a4ad16973c1f8
 Source2:	%{name}.tmpfiles
@@ -21,18 +21,18 @@ Source4:	boot-duration
 Source6:	%{name}-update-initrd
 Patch0:		text-colors.patch
 Patch1:		%{name}-restore-suspend.patch
-Patch100:	%{name}-git.patch
 URL:		http://www.freedesktop.org/wiki/Software/Plymouth
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake >= 1:1.11
 BuildRequires:	cairo-devel
 BuildRequires:	gtk+2-devel >= 2:2.12.0
-BuildRequires:	xorg-lib-libpciaccess-devel
 %{?with_drm:BuildRequires:	libdrm-devel}
 BuildRequires:	libpng-devel >= 2:1.2.16
+BuildRequires:	libtool >= 2:2
 BuildRequires:	pango-devel >= 1:1.21.0
 BuildRequires:	pkgconfig
 BuildRequires:	udev-devel
+BuildRequires:	xorg-lib-libpciaccess-devel
 Requires:	%{name}-graphics-libs = %{version}-%{release}
 Requires(post):	%{name}-scripts = %{version}-%{release}
 Requires:	/etc/os-release
@@ -348,7 +348,6 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 
 %prep
 %setup -q
-%patch100 -p1
 %patch0 -p1
 %patch1 -p1
 
@@ -356,6 +355,7 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 %{__sed} -i -e 's/Theme=.*/Theme=tribar/ig' -e 's/ShowDelay=.*//ig' src/plymouthd.defaults
 
 %build
+%{__libtoolize}
 %{__aclocal}
 %{__autoconf}
 %{__autoheader}
