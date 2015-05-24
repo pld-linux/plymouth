@@ -8,12 +8,12 @@
 Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
-Version:	0.9.0
-Release:	2
+Version:	0.9.2
+Release:	1
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
-# Source0-md5:	147150705417f025d036304e97e33c9c
+# Source0-md5:	ff420994deb7ea203df678df92e7ab7d
 Source1:	%{name}-logo.png
 # Source1-md5:	6b38a868585adfd3a96a4ad16973c1f8
 Source2:	%{name}.tmpfiles
@@ -25,12 +25,13 @@ URL:		http://www.freedesktop.org/wiki/Software/Plymouth
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake >= 1:1.11
 BuildRequires:	cairo-devel
-BuildRequires:	gtk+2-devel >= 2:2.12.0
+BuildRequires:	gtk+3-devel >= 3.14.0
 %{?with_drm:BuildRequires:	libdrm-devel}
 BuildRequires:	libpng-devel >= 2:1.2.16
 BuildRequires:	libtool >= 2:2
 BuildRequires:	pango-devel >= 1:1.21.0
 BuildRequires:	pkgconfig
+BuildRequires:	systemd-units
 BuildRequires:	udev-devel
 BuildRequires:	xorg-lib-libpciaccess-devel
 Requires:	%{name}-graphics-libs = %{version}-%{release}
@@ -72,6 +73,7 @@ Summary:	Plymouth graphics libraries
 Summary(pl.UTF-8):	Biblioteki graficzne Plymouth
 Group:		Development/Libraries
 Requires:	%{name}-core-libs = %{version}-%{release}
+Requires:	gtk+3 >= 3.14.0
 Provides:	%{name}-graphics-libs = %{version}-%{release}
 Obsoletes:	plymouth-libs < %{version}-%{release}
 Conflicts:	plymouth-libs < 0.8.4-0.20120319.1
@@ -481,18 +483,18 @@ fi
 %files core-libs
 %defattr(644,root,root,755)
 %attr(755,root,root) /%{_lib}/libply.so.*.*.*
-%attr(755,root,root) %ghost /%{_lib}/libply.so.2
+%attr(755,root,root) %ghost /%{_lib}/libply.so.4
 %attr(755,root,root) /%{_lib}/libply-splash-core.so.*.*.*
-%attr(755,root,root) %ghost /%{_lib}/libply-splash-core.so.2
+%attr(755,root,root) %ghost /%{_lib}/libply-splash-core.so.4
 %attr(755,root,root) %{_libdir}/libply-boot-client.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libply-boot-client.so.2
+%attr(755,root,root) %ghost %{_libdir}/libply-boot-client.so.4
 %dir %{_libdir}/plymouth
 %dir %{_libdir}/plymouth/renderers
 
 %files graphics-libs
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libply-splash-graphics.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libply-splash-graphics.so.2
+%attr(755,root,root) %ghost %{_libdir}/libply-splash-graphics.so.4
 %attr(755,root,root) %{_libdir}/plymouth/renderers/x11.so
 
 %files devel
