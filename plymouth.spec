@@ -9,7 +9,7 @@ Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
 Version:	0.9.2
-Release:	1
+Release:	2
 License:	GPL v2+
 Group:		Base
 Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
@@ -365,6 +365,7 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 %configure \
 	UDEVADM=/sbin/udevadm \
 	SYSTEMD_ASK_PASSWORD_AGENT=/bin/systemd-tty-ask-password-agent \
+	--enable-static \
 	%{__enable_disable drm drm} \
 	--disable-silent-rules \
 	--enable-documentation \
@@ -400,8 +401,10 @@ cp -p %{SOURCE4} $RPM_BUILD_ROOT%{_datadir}/plymouth/default-boot-duration
 cp -p %{SOURCE6} $RPM_BUILD_ROOT%{_libdir}/plymouth/plymouth-update-initrd
 
 %{__rm} $RPM_BUILD_ROOT{/%{_lib},%{_libdir}}/*.la \
-	$RPM_BUILD_ROOT%{_libdir}/plymouth/*.la \
-	$RPM_BUILD_ROOT%{_libdir}/plymouth/renderers/*.la
+	$RPM_BUILD_ROOT%{_libdir}/plymouth/*.{a,la} \
+	$RPM_BUILD_ROOT%{_libdir}/plymouth/renderers/*.{a,la}
+
+%{__mv} $RPM_BUILD_ROOT/%{_lib}/{libply,libply-splash-core}.a $RPM_BUILD_ROOT/%{_libdir}
 
 install -d $RPM_BUILD_ROOT%{_localstatedir}/lib/plymouth
 
@@ -507,6 +510,13 @@ fi
 %{_pkgconfigdir}/ply-boot-client.pc
 %{_pkgconfigdir}/ply-splash-core.pc
 %{_pkgconfigdir}/ply-splash-graphics.pc
+
+%files static
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libply.a
+%attr(755,root,root) %{_libdir}/libply-boot-client.a
+%attr(755,root,root) %{_libdir}/libply-splash-core.a
+%attr(755,root,root) %{_libdir}/libply-splash-graphics.a
 
 %files scripts
 %defattr(644,root,root,755)
