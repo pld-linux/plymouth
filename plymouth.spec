@@ -25,10 +25,13 @@ URL:		https://www.freedesktop.org/wiki/Software/Plymouth
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake >= 1:1.11
 BuildRequires:	cairo-devel
+BuildRequires:	docbook-dtd42-xml
+BuildRequires:	docbook-style-xsl-nons
 BuildRequires:	gtk+3-devel >= 3.14.0
 %{?with_drm:BuildRequires:	libdrm-devel}
 BuildRequires:	libpng-devel >= 2:1.2.16
 BuildRequires:	libtool >= 2:2
+BuildRequires:	libxslt-progs
 BuildRequires:	pango-devel >= 1:1.21.0
 BuildRequires:	pkgconfig
 BuildRequires:	systemd-units
@@ -384,7 +387,7 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_bindir},%{_libdir},%{_pixmapsdir},%{systemdtmpfilesdir}}
+install -d $RPM_BUILD_ROOT{%{_bindir},%{_pixmapsdir},%{systemdtmpfilesdir}}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
@@ -398,13 +401,13 @@ cp -p %{SOURCE4} $RPM_BUILD_ROOT%{_datadir}/plymouth/default-boot-duration
 > $RPM_BUILD_ROOT%{_localstatedir}/lib/plymouth/boot-duration
 
 # Override plymouth-update-initrd to work with dracut or mkinitrd
-cp -p %{SOURCE6} $RPM_BUILD_ROOT%{_libdir}/plymouth/plymouth-update-initrd
+cp -p %{SOURCE6} $RPM_BUILD_ROOT%{_libexecdir}/plymouth/plymouth-update-initrd
 
 %{__rm} $RPM_BUILD_ROOT{/%{_lib},%{_libdir}}/*.la \
 	$RPM_BUILD_ROOT%{_libdir}/plymouth/*.{a,la} \
 	$RPM_BUILD_ROOT%{_libdir}/plymouth/renderers/*.{a,la}
 
-%{__mv} $RPM_BUILD_ROOT/%{_lib}/{libply,libply-splash-core}.a $RPM_BUILD_ROOT/%{_libdir}
+%{__mv} $RPM_BUILD_ROOT/%{_lib}/{libply,libply-splash-core}.a $RPM_BUILD_ROOT%{_libdir}
 
 install -d $RPM_BUILD_ROOT%{_localstatedir}/lib/plymouth
 
@@ -521,9 +524,12 @@ fi
 %files scripts
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_sbindir}/plymouth-set-default-theme
-%attr(755,root,root) %{_libdir}/plymouth/plymouth-generate-initrd
-%attr(755,root,root) %{_libdir}/plymouth/plymouth-populate-initrd
-%attr(755,root,root) %{_libdir}/plymouth/plymouth-update-initrd
+%if "%{_libexecdir}" != "%{_libdir}"
+%dir %{_libexecdir}/plymouth
+%endif
+%attr(755,root,root) %{_libexecdir}/plymouth/plymouth-generate-initrd
+%attr(755,root,root) %{_libexecdir}/plymouth/plymouth-populate-initrd
+%attr(755,root,root) %{_libexecdir}/plymouth/plymouth-update-initrd
 %{_mandir}/man1/plymouth-set-default-theme.1*
 
 %files plugin-fade-throbber
