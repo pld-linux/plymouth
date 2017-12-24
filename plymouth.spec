@@ -8,12 +8,12 @@
 Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
-Version:	0.9.2
-Release:	2
+Version:	0.9.3
+Release:	1
 License:	GPL v2+
 Group:		Base
-Source0:	http://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.bz2
-# Source0-md5:	ff420994deb7ea203df678df92e7ab7d
+Source0:	https://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.xz
+# Source0-md5:	b261c720888a5431cdfce8494805eab3
 Source1:	%{name}-logo.png
 # Source1-md5:	6b38a868585adfd3a96a4ad16973c1f8
 Source2:	%{name}.tmpfiles
@@ -21,7 +21,7 @@ Source4:	boot-duration
 Source6:	%{name}-update-initrd
 Patch0:		text-colors.patch
 Patch1:		%{name}-restore-suspend.patch
-URL:		http://www.freedesktop.org/wiki/Software/Plymouth
+URL:		https://www.freedesktop.org/wiki/Software/Plymouth
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake >= 1:1.11
 BuildRequires:	cairo-devel
