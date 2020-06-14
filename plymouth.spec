@@ -5,15 +5,18 @@
 # Conditional build:
 %bcond_without	drm		# disable building with DRM renderer support
 
+%define		git_commit	1e36e303e08ba425fecbcff4dde22c8ee936638c
+%define		git_shortcommit	%(c=%{git_commit}; echo ${c:0:7})
 Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
 Version:	0.9.4
-Release:	1
+Release:	1.%{git_shortcommit}.0.1
 License:	GPL v2+
 Group:		Base
-Source0:	https://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.xz
-# Source0-md5:	4efa5551d230165981b105e7c6a50aa7
+#Source0:	https://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.xz
+Source0:	https://gitlab.freedesktop.org/plymouth/plymouth/-/archive/%{git_commit}/%{name}-%{git_shortcommit}.tar.gz
+# Source0-md5:	ee21da7c27f7cc462f514360e38c83c7
 Source1:	%{name}-logo.png
 # Source1-md5:	6b38a868585adfd3a96a4ad16973c1f8
 Source2:	%{name}.tmpfiles
@@ -42,6 +45,7 @@ Requires(post):	%{name}-scripts = %{version}-%{release}
 Requires:	/etc/os-release
 Requires:	systemd-units
 Obsoletes:	plymouth-gdm-hooks
+Obsoletes:	plymouth-plugin-throbgress
 Obsoletes:	plymouth-utils
 Obsoletes:	systemd-plymouth
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -219,23 +223,6 @@ Odznacza się ona dwuetapowym procesem startu, rozpoczynającym się
 postępującą animacją synchronizowaną z czasem uruchamiania, a kończy
 krótką, jednorazową animacją.
 
-%package plugin-throbgress
-Summary:	Plymouth "Throbgress" plugin
-Summary(pl.UTF-8):	Wtyczka Plymouth "Throbgress"
-Group:		Base
-Requires:	%{name}-graphics-libs = %{version}-%{release}
-Requires:	%{name}-plugin-label = %{version}-%{release}
-
-%description plugin-throbgress
-This package contains the "throbgress" boot splash plugin for
-Plymouth. It features a centered logo and animated spinner that spins
-repeatedly while a progress bar advances at the bottom of the screen.
-
-%description plugin-throbgress -l pl.UTF-8
-Ten pakiet zawiera wtyczkę ekranu startowego "Throbgress" do Plymouth.
-Cechuje się ona umieszczonym pośrodku logiem oraz animowanym kręcącym
-się kółkiem, podczas gdy pasek postępu przesuwa się na dole ekranu.
-
 %package system-theme
 Summary:	Plymouth default theme
 Summary(pl.UTF-8):	Domyślny motyw Plymouth
@@ -249,6 +236,16 @@ This metapackage tracks the current distribution default theme.
 
 %description system-theme -l pl.UTF-8
 Ten metapakiet śledzi domyślny motyw dystrybucji.
+
+%package theme-bgrt
+Summary:	Jimmac's spinner theme using the ACPI BGRT graphics as background
+Group:		Base
+Requires:	%{name}-plugin-two-step = %{version}-%{release}
+Requires(post):	%{name}-scripts = %{version}-%{release}
+Provides:	%{name}(system-theme) = %{version}-%{release}
+
+%description theme-bgrt
+Jimmac's spinner theme using the ACPI BGRT graphics as background.
 
 %package theme-glow
 Summary:	Plymouth "Glow" theme
@@ -323,7 +320,7 @@ Summary:	Plymouth "Spinfinity" theme
 Summary(pl.UTF-8):	Motyw Plymouth "Spinfinity"
 Group:		Base
 Requires(post):	%{name}-scripts = %{version}-%{release}
-Requires:	%{name}-plugin-throbgress = %{version}-%{release}
+Requires:	%{name}-plugin-two-step = %{version}-%{release}
 Obsoletes:	plymouth-plugin-spinfinity
 
 %description theme-spinfinity
@@ -352,7 +349,7 @@ Ten pakiet zawiera motyw ekranu startowego Plymouth "Spinner".
 Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 
 %prep
-%setup -q
+%setup -q -n %{name}-%{git_commit}
 %patch0 -p1
 %patch1 -p1
 
@@ -360,8 +357,9 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 %{__sed} -i -e 's/Theme=.*/Theme=tribar/ig' -e 's/ShowDelay=.*//ig' src/plymouthd.defaults
 
 %build
+%{__autopoint}
 %{__libtoolize}
-%{__aclocal}
+%{__aclocal} -I m4
 %{__autoconf}
 %{__autoheader}
 %{__automake}
@@ -414,6 +412,8 @@ install -d $RPM_BUILD_ROOT%{_localstatedir}/lib/plymouth
 cp -p %{SOURCE1} $RPM_BUILD_ROOT%{_pixmapsdir}/plymouth-logo.png
 cp -p %{SOURCE2} $RPM_BUILD_ROOT%{systemdtmpfilesdir}/%{name}.conf
 
+%find_lang %{name}
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -431,7 +431,7 @@ fi
 %post	graphics-libs -p /sbin/ldconfig
 %postun	graphics-libs -p /sbin/ldconfig
 
-%files
+%files -f %{name}.lang
 %defattr(644,root,root,755)
 %doc AUTHORS README TODO
 %dir %{_sysconfdir}/plymouth
@@ -489,18 +489,18 @@ fi
 %files core-libs
 %defattr(644,root,root,755)
 %attr(755,root,root) /%{_lib}/libply.so.*.*.*
-%attr(755,root,root) %ghost /%{_lib}/libply.so.4
+%attr(755,root,root) %ghost /%{_lib}/libply.so.5
 %attr(755,root,root) /%{_lib}/libply-splash-core.so.*.*.*
-%attr(755,root,root) %ghost /%{_lib}/libply-splash-core.so.4
+%attr(755,root,root) %ghost /%{_lib}/libply-splash-core.so.5
 %attr(755,root,root) %{_libdir}/libply-boot-client.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libply-boot-client.so.4
+%attr(755,root,root) %ghost %{_libdir}/libply-boot-client.so.5
 %dir %{_libdir}/plymouth
 %dir %{_libdir}/plymouth/renderers
 
 %files graphics-libs
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libply-splash-graphics.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libply-splash-graphics.so.4
+%attr(755,root,root) %ghost %{_libdir}/libply-splash-graphics.so.5
 %attr(755,root,root) %{_libdir}/plymouth/renderers/x11.so
 
 %files devel
@@ -548,16 +548,17 @@ fi
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/plymouth/space-flares.so
 
-%files plugin-throbgress
-%defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/plymouth/throbgress.so
-
 %files plugin-two-step
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/plymouth/two-step.so
 
 %files system-theme
 %defattr(644,root,root,755)
+
+%files theme-bgrt
+%defattr(644,root,root,755)
+%dir %{_datadir}/plymouth/themes/bgrt
+%{_datadir}/plymouth/themes/bgrt/bgrt.plymouth
 
 %files theme-glow
 %defattr(644,root,root,755)
@@ -583,9 +584,14 @@ fi
 %files theme-spinfinity
 %defattr(644,root,root,755)
 %dir %{_datadir}/plymouth/themes/spinfinity
+%{_datadir}/plymouth/themes/spinfinity/animation-0001.png
 %{_datadir}/plymouth/themes/spinfinity/box.png
 %{_datadir}/plymouth/themes/spinfinity/bullet.png
+%{_datadir}/plymouth/themes/spinfinity/capslock.png
 %{_datadir}/plymouth/themes/spinfinity/entry.png
+%{_datadir}/plymouth/themes/spinfinity/header-image.png
+%{_datadir}/plymouth/themes/spinfinity/keyboard.png
+%{_datadir}/plymouth/themes/spinfinity/keymap-render.png
 %{_datadir}/plymouth/themes/spinfinity/lock.png
 %{_datadir}/plymouth/themes/spinfinity/throbber-[0-3][0-9].png
 %{_datadir}/plymouth/themes/spinfinity/spinfinity.plymouth

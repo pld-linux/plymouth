@@ -17,14 +17,14 @@ Conflicts:
 --- plymouth-0.9.2/src/libply-splash-core/ply-boot-splash-plugin.h.orig	2015-05-24 21:36:57.996946648 +0200
 +++ plymouth-0.9.2/src/libply-splash-core/ply-boot-splash-plugin.h	2015-05-24 21:40:09.206938626 +0200
 @@ -38,6 +38,8 @@
- {
          PLY_BOOT_SPLASH_MODE_BOOT_UP,
          PLY_BOOT_SPLASH_MODE_SHUTDOWN,
+         PLY_BOOT_SPLASH_MODE_REBOOT,
 +        PLY_BOOT_SPLASH_MODE_SUSPEND,
 +        PLY_BOOT_SPLASH_MODE_RESUME,
          PLY_BOOT_SPLASH_MODE_UPDATES,
-         PLY_BOOT_SPLASH_MODE_INVALID
- } ply_boot_splash_mode_t;
+         PLY_BOOT_SPLASH_MODE_SYSTEM_UPGRADE,
+         PLY_BOOT_SPLASH_MODE_FIRMWARE_UPGRADE,
 --- plymouth-0.9.2/src/plugins/splash/script/script-lib-plymouth.c.orig	2015-05-24 21:36:57.996946648 +0200
 +++ plymouth-0.9.2/src/plugins/splash/script/script-lib-plymouth.c	2015-05-24 21:41:42.316934720 +0200
 @@ -70,6 +70,12 @@
