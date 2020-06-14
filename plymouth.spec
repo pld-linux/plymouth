@@ -6,7 +6,7 @@
 %bcond_without	drm		# disable building with DRM renderer support
 
 %define		git_commit	1e36e303e08ba425fecbcff4dde22c8ee936638c
-%define		git_shortcommit	%(c=%{git_commit}; echo ${c:0:7})
+%define		git_shortcommit	1e36e30
 Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
