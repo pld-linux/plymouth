@@ -1,22 +1,20 @@
 # TODO
 # - integrate with geninitrd
 # - pldize recent update (r1.18)
+# - unpackaged /etc/logrotate.d/bootlog ?
 #
 # Conditional build:
 %bcond_without	drm		# disable building with DRM renderer support
 
-%define		git_commit	1e36e303e08ba425fecbcff4dde22c8ee936638c
-%define		git_shortcommit	1e36e30
 Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
-Version:	0.9.4
-Release:	1.%{git_shortcommit}.1
+Version:	0.9.5
+Release:	1
 License:	GPL v2+
 Group:		Base
-#Source0:	https://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.xz
-Source0:	https://gitlab.freedesktop.org/plymouth/plymouth/-/archive/%{git_commit}/%{name}-%{git_shortcommit}.tar.gz
-# Source0-md5:	ee21da7c27f7cc462f514360e38c83c7
+Source0:	https://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.xz
+# Source0-md5:	8a25d23f3ae732af300a56fa33cacff2
 Source1:	%{name}-logo.png
 # Source1-md5:	6b38a868585adfd3a96a4ad16973c1f8
 Source2:	%{name}.tmpfiles
@@ -24,12 +22,14 @@ Source4:	boot-duration
 Source6:	%{name}-update-initrd
 Patch0:		text-colors.patch
 Patch1:		%{name}-restore-suspend.patch
+Patch2:		%{name}-link.patch
 URL:		https://www.freedesktop.org/wiki/Software/Plymouth
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake >= 1:1.11
 BuildRequires:	cairo-devel
 BuildRequires:	docbook-dtd42-xml
 BuildRequires:	docbook-style-xsl-nons
+BuildRequires:	gettext-tools >= 0.19.8
 BuildRequires:	gtk+3-devel >= 3.14.0
 %{?with_drm:BuildRequires:	libdrm-devel}
 BuildRequires:	libpng-devel >= 2:1.2.16
@@ -239,13 +239,17 @@ Ten metapakiet śledzi domyślny motyw dystrybucji.
 
 %package theme-bgrt
 Summary:	Jimmac's spinner theme using the ACPI BGRT graphics as background
+Summary(pl.UTF-8):	Motyw Spinner Jimmaca wykorzystujący jako tło grafikę ACPI BGRT
 Group:		Base
-Requires:	%{name}-plugin-two-step = %{version}-%{release}
 Requires(post):	%{name}-scripts = %{version}-%{release}
+Requires:	%{name}-plugin-two-step = %{version}-%{release}
 Provides:	%{name}(system-theme) = %{version}-%{release}
 
 %description theme-bgrt
 Jimmac's spinner theme using the ACPI BGRT graphics as background.
+
+%description theme-bgrt -l pl.UTF-8
+Motyw Spinner Jimmaca wykorzystujący jako tło grafikę ACPI BGRT
 
 %package theme-glow
 Summary:	Plymouth "Glow" theme
@@ -349,15 +353,16 @@ Ten pakiet zawiera motyw ekranu startowego Plymouth "Spinner".
 Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 
 %prep
-%setup -q -n %{name}-%{git_commit}
+%setup -q
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 # Change the default theme
 %{__sed} -i -e 's/Theme=.*/Theme=tribar/ig' -e 's/ShowDelay=.*//ig' src/plymouthd.defaults
 
 %build
-%{__autopoint}
+#{__autopoint}
 %{__libtoolize}
 %{__aclocal} -I m4
 %{__autoconf}
@@ -370,7 +375,6 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 	%{__enable_disable drm drm} \
 	--disable-silent-rules \
 	--enable-documentation \
-	--disable-gdm-transition \
 	--enable-systemd-integration \
 	--enable-tracing \
 	--without-rhgb-compat-link \
