@@ -9,12 +9,12 @@
 Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
-Version:	0.9.5
+Version:	22.02.122
 Release:	1
 License:	GPL v2+
 Group:		Base
 Source0:	https://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.xz
-# Source0-md5:	8a25d23f3ae732af300a56fa33cacff2
+# Source0-md5:	07281db83aa3132f7941f4d0b277a68e
 Source1:	%{name}-logo.png
 # Source1-md5:	6b38a868585adfd3a96a4ad16973c1f8
 Source2:	%{name}.tmpfiles
@@ -23,6 +23,7 @@ Source6:	%{name}-update-initrd
 Patch0:		text-colors.patch
 Patch1:		%{name}-restore-suspend.patch
 Patch2:		%{name}-link.patch
+Patch3:		%{name}-glibc.patch
 URL:		https://www.freedesktop.org/wiki/Software/Plymouth
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake >= 1:1.11
@@ -44,10 +45,10 @@ Requires:	%{name}-graphics-libs = %{version}-%{release}
 Requires(post):	%{name}-scripts = %{version}-%{release}
 Requires:	/etc/os-release
 Requires:	systemd-units
-Obsoletes:	plymouth-gdm-hooks
-Obsoletes:	plymouth-plugin-throbgress
-Obsoletes:	plymouth-utils
-Obsoletes:	systemd-plymouth
+Obsoletes:	plymouth-gdm-hooks < 0.8.4
+Obsoletes:	plymouth-plugin-throbgress < 0.9.5
+Obsoletes:	plymouth-utils < 0.8.4
+Obsoletes:	systemd-plymouth < 1:186
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -65,7 +66,7 @@ uruchomieniu systemu.
 Summary:	Plymouth core libraries
 Summary(pl.UTF-8):	Podstawowe biblioteki Plymouth
 Group:		Libraries
-Conflicts:	plymouth-libs < 0.8.4-0.20120319.1
+Conflicts:	plymouth-libs < 0.8.5
 
 %description core-libs
 This package contains the libply and libply-splash-core libraries used
@@ -81,9 +82,7 @@ Summary(pl.UTF-8):	Biblioteki graficzne Plymouth
 Group:		Development/Libraries
 Requires:	%{name}-core-libs = %{version}-%{release}
 Requires:	gtk+3 >= 3.14.0
-Provides:	%{name}-graphics-libs = %{version}-%{release}
-Obsoletes:	plymouth-libs < %{version}-%{release}
-Conflicts:	plymouth-libs < 0.8.4-0.20120319.1
+Obsoletes:	plymouth-libs < 0.8.5
 
 %description graphics-libs
 This package contains the libply-splash-graphics library used by
@@ -258,7 +257,7 @@ Group:		Base
 Requires:	%{name}-plugin-two-step = %{version}-%{release}
 Requires(post):	%{name}-scripts = %{version}-%{release}
 Provides:	%{name}(system-theme) = %{version}-%{release}
-Obsoletes:	plymouth-theme-charge
+Obsoletes:	plymouth-theme-charge < 0.8.9
 
 %description theme-glow
 This package contains the "Glow" boot splash theme for Plymouth.
@@ -274,7 +273,7 @@ Summary(pl.UTF-8):	Motyw Plymouth "Fade in"
 Group:		Base
 Requires(post):	%{name}-scripts = %{version}-%{release}
 Requires:	%{name}-plugin-fade-throbber = %{version}-%{release}
-Obsoletes:	plymouth-plugin-fade-in
+Obsoletes:	plymouth-plugin-fade-in < 0.7.0
 
 %description theme-fade-in
 This package contains the "Fade-In" boot splash theme for Plymouth. It
@@ -308,7 +307,7 @@ Summary(pl.UTF-8):	Motyw Plymouth "Solar"
 Group:		Base
 Requires(post):	%{name}-scripts = %{version}-%{release}
 Requires:	%{name}-plugin-space-flares = %{version}-%{release}
-Obsoletes:	plymouth-plugin-solar
+Obsoletes:	plymouth-plugin-solar < 0.7.0
 
 %description theme-solar
 This package contains the "Solar" boot splash theme for Plymouth. It
@@ -325,7 +324,7 @@ Summary(pl.UTF-8):	Motyw Plymouth "Spinfinity"
 Group:		Base
 Requires(post):	%{name}-scripts = %{version}-%{release}
 Requires:	%{name}-plugin-two-step = %{version}-%{release}
-Obsoletes:	plymouth-plugin-spinfinity
+Obsoletes:	plymouth-plugin-spinfinity < 0.7.0
 
 %description theme-spinfinity
 This package contains the "Spinfinity" boot splash theme for Plymouth.
@@ -357,6 +356,7 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 
 # Change the default theme
 %{__sed} -i -e 's/Theme=.*/Theme=tribar/ig' -e 's/ShowDelay=.*//ig' src/plymouthd.defaults
@@ -450,6 +450,10 @@ fi
 %attr(755,root,root) %{_libdir}/plymouth/tribar.so
 %attr(755,root,root) %{_libdir}/plymouth/renderers/drm.so
 %attr(755,root,root) %{_libdir}/plymouth/renderers/frame-buffer.so
+%if "%{_libexecdir}" != "%{_libdir}"
+%dir %{_libexecdir}/plymouth
+%endif
+%attr(755,root,root) %{_libexecdir}/plymouth/plymouthd-fd-escrow
 %dir %{_datadir}/plymouth
 %dir %{_datadir}/plymouth/themes
 %dir %{_datadir}/plymouth/themes/details
@@ -479,17 +483,22 @@ fi
 %{systemdunitdir}/plymouth-reboot.service
 %{systemdunitdir}/plymouth-start.service
 %{systemdunitdir}/plymouth-switch-root.service
+%{systemdunitdir}/plymouth-switch-root-initramfs.service
 %{systemdunitdir}/systemd-ask-password-plymouth.path
 %{systemdunitdir}/systemd-ask-password-plymouth.service
 %{systemdunitdir}/halt.target.wants/plymouth-halt.service
+%{systemdunitdir}/halt.target.wants/plymouth-switch-root-initramfs.service
 %dir %{systemdunitdir}/initrd-switch-root.target.wants
 %{systemdunitdir}/initrd-switch-root.target.wants/plymouth-switch-root.service
 %{systemdunitdir}/initrd-switch-root.target.wants/plymouth-start.service
 %{systemdunitdir}/kexec.target.wants/plymouth-kexec.service
+%{systemdunitdir}/kexec.target.wants/plymouth-switch-root-initramfs.service
 %{systemdunitdir}/multi-user.target.wants/plymouth-quit.service
 %{systemdunitdir}/multi-user.target.wants/plymouth-quit-wait.service
 %{systemdunitdir}/poweroff.target.wants/plymouth-poweroff.service
+%{systemdunitdir}/poweroff.target.wants/plymouth-switch-root-initramfs.service
 %{systemdunitdir}/reboot.target.wants/plymouth-reboot.service
+%{systemdunitdir}/reboot.target.wants/plymouth-switch-root-initramfs.service
 %{systemdunitdir}/sysinit.target.wants/plymouth-read-write.service
 %{systemdunitdir}/sysinit.target.wants/plymouth-start.service
 
@@ -531,9 +540,6 @@ fi
 %files scripts
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_sbindir}/plymouth-set-default-theme
-%if "%{_libexecdir}" != "%{_libdir}"
-%dir %{_libexecdir}/plymouth
-%endif
 %attr(755,root,root) %{_libexecdir}/plymouth/plymouth-generate-initrd
 %attr(755,root,root) %{_libexecdir}/plymouth/plymouth-populate-initrd
 %attr(755,root,root) %{_libexecdir}/plymouth/plymouth-update-initrd
