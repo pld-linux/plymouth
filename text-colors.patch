@@ -31,3 +31,31 @@
  
          ply_text_display_set_background_color (view->display,
                                                 PLY_TERMINAL_COLOR_BLACK);
+--- plymouth-24.004.60/src/plugins/splash/tribar/meson.build.orig	2024-01-04 22:08:14.000000000 +0100
++++ plymouth-24.004.60/src/plugins/splash/tribar/meson.build	2024-02-17 09:44:34.175933648 +0100
+@@ -3,6 +3,11 @@ tribar_plugin = shared_module('tribar',
+   dependencies: [
+     libply_splash_core_dep,
+   ],
++  c_args: [
++    '-DPLYMOUTH_BACKGROUND_COLOR=@0@'.format(get_option('background-color')),
++    '-DPLYMOUTH_BACKGROUND_START_COLOR=@0@'.format(get_option('background-start-color-stop')),
++    '-DPLYMOUTH_BACKGROUND_END_COLOR=@0@'.format(get_option('background-end-color-stop')),
++  ],
+   include_directories: config_h_inc,
+   name_prefix: '',
+   install: true,
+--- plymouth-24.004.60/src/plugins/splash/text/meson.build.orig	2024-01-04 22:08:14.000000000 +0100
++++ plymouth-24.004.60/src/plugins/splash/text/meson.build	2024-02-17 09:41:08.590380734 +0100
+@@ -4,6 +4,11 @@ text_plugin = shared_module('text',
+     libply_splash_core_dep,
+     libply_splash_graphics_dep,
+   ],
++  c_args: [
++    '-DPLYMOUTH_BACKGROUND_COLOR=@0@'.format(get_option('background-color')),
++    '-DPLYMOUTH_BACKGROUND_START_COLOR=@0@'.format(get_option('background-start-color-stop')),
++    '-DPLYMOUTH_BACKGROUND_END_COLOR=@0@'.format(get_option('background-end-color-stop')),
++  ],
+   include_directories: config_h_inc,
+   name_prefix: '',
+   install: true,

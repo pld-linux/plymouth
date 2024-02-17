@@ -1,0 +1,10 @@
+--- plymouth-24.004.60/meson.build.orig	2024-02-17 14:27:42.077235621 +0100
++++ plymouth-24.004.60/meson.build	2024-02-17 14:33:58.655195523 +0100
+@@ -42,7 +42,6 @@ xkeyboard_config_dep = dependency('xkeyb
+ if get_option('systemd-integration')
+   systemd_dep = dependency('systemd')
+   systemd_unit_dir = systemd_dep.get_variable('systemdsystemunitdir',
+-    pkgconfig_define: [ 'rootprefix', get_option('prefix') ],
+   )
+   if get_option('systemd_ask_password_agent_path') == ''
+     systemd_ask_password_agent = find_program('systemd-tty-ask-password-agent')

@@ -9,38 +9,41 @@
 Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
-Version:	22.02.122
+Version:	24.004.60
 Release:	1
 License:	GPL v2+
 Group:		Base
 Source0:	https://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.xz
-# Source0-md5:	07281db83aa3132f7941f4d0b277a68e
+# Source0-md5:	6a6d6ec1a6d6e9bd776f368619864949
 Source1:	%{name}-logo.png
 # Source1-md5:	6b38a868585adfd3a96a4ad16973c1f8
-Source2:	%{name}.tmpfiles
-Source4:	boot-duration
-Source6:	%{name}-update-initrd
+Source2:	boot-duration
+Source3:	%{name}-update-initrd
 Patch0:		text-colors.patch
 Patch1:		%{name}-restore-suspend.patch
-Patch2:		%{name}-link.patch
-Patch3:		%{name}-glibc.patch
+# allow to specify systemd-tty-ask-password-agent path even if not installed at build time
+Patch2:		%{name}-paths.patch
+Patch3:		%{name}-systemd-prefix.patch
 URL:		https://www.freedesktop.org/wiki/Software/Plymouth
-BuildRequires:	autoconf >= 2.50
-BuildRequires:	automake >= 1:1.11
 BuildRequires:	cairo-devel
 BuildRequires:	docbook-dtd42-xml
 BuildRequires:	docbook-style-xsl-nons
+BuildRequires:	freetype-devel >= 2.0
 BuildRequires:	gettext-tools >= 0.19.8
 BuildRequires:	gtk+3-devel >= 3.14.0
 %{?with_drm:BuildRequires:	libdrm-devel}
+BuildRequires:	libevdev-devel
 BuildRequires:	libpng-devel >= 2:1.2.16
-BuildRequires:	libtool >= 2:2
 BuildRequires:	libxslt-progs
+BuildRequires:	meson >= 0.61
+BuildRequires:	ninja >= 1.5
 BuildRequires:	pango-devel >= 1:1.21.0
 BuildRequires:	pkgconfig
+BuildRequires:	rpmbuild(macros) >= 1.736
 BuildRequires:	systemd-units
 BuildRequires:	udev-devel
-BuildRequires:	xorg-lib-libpciaccess-devel
+BuildRequires:	xkeyboard-config
+BuildRequires:	xorg-lib-libxkbcommon-devel
 Requires:	%{name}-graphics-libs = %{version}-%{release}
 Requires(post):	%{name}-scripts = %{version}-%{release}
 Requires:	/etc/os-release
@@ -161,12 +164,12 @@ Group:		Base
 Requires:	%{name}-graphics-libs = %{version}-%{release}
 
 %description plugin-label
-This package contains the label control plugin for Plymouth. It
-provides the ability to render text on graphical boot splashes using
+This package contains the label control plugins for Plymouth. They
+provide the ability to render text on graphical boot splashes using
 pango and cairo.
 
 %description plugin-label -l pl.UTF-8
-Ten pakiet zawiera wtyczkę Plymouth sterującą etykietami. Daje ona
+Ten pakiet zawiera wtyczki Plymouth sterujące etykietami. Dają one
 możliwość renderowania tekstu na graficznych ekranach startowych przy
 użyciu bibliotek pango i cairo.
 
@@ -359,62 +362,44 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 %patch3 -p1
 
 # Change the default theme
-%{__sed} -i -e 's/Theme=.*/Theme=tribar/ig' -e 's/ShowDelay=.*//ig' src/plymouthd.defaults
+%{__sed} -i -e 's/Theme=.*/Theme=tribar/' -e 's/ShowDelay=.*//' src/plymouthd.defaults
 
 %build
-#{__autopoint}
-%{__libtoolize}
-%{__aclocal} -I m4
-%{__autoconf}
-%{__autoheader}
-%{__automake}
-%configure \
-	UDEVADM=/sbin/udevadm \
-	SYSTEMD_ASK_PASSWORD_AGENT=/bin/systemd-tty-ask-password-agent \
-	--enable-static \
-	%{__enable_disable drm drm} \
-	--disable-silent-rules \
-	--enable-documentation \
-	--enable-systemd-integration \
-	--enable-tracing \
-	--without-rhgb-compat-link \
-	--with-background-start-color-stop=0x009431 \
-	--with-background-end-color-stop=0x006300 \
-	--with-background-color=0x00c663 \
-	--with-logo=%{_pixmapsdir}/plymouth-logo.png \
-	--with-release-file=/etc/os-release \
-	--with-system-root-install
+%meson build \
+	-Dbackground-color=0x00c663 \
+	-Dbackground-start-color-stop=0x009431 \
+	-Dbackground-end-color-stop=0x006300 \
+	%{!?with_drm:-Ddrm=false} \
+	-Dlogo=%{_pixmapsdir}/plymouth-logo.png \
+	-Drelease-file=/etc/os-release \
+	-Dsystemd_ask_password_agent_path=/bin/systemd-tty-ask-password-agent
 
-%{__make}
+%ninja_build -C build
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_bindir},%{_pixmapsdir},%{systemdtmpfilesdir}}
+install -d $RPM_BUILD_ROOT{%{_pixmapsdir},%{systemdtmpfilesdir}}
 
-%{__make} install \
-	DESTDIR=$RPM_BUILD_ROOT
+# meson/ninja symlinking requires target file to be already present
+cp -p %{SOURCE1} $RPM_BUILD_ROOT%{_pixmapsdir}/plymouth-logo.png
 
+%ninja_install -C build
+
+# meson-based plymouth build doesn't support installing into split /usr
+install -d $RPM_BUILD_ROOT{/%{_lib},/bin,/sbin}
+%{__mv} $RPM_BUILD_ROOT%{_bindir}/plymouth $RPM_BUILD_ROOT/bin
+%{__mv} $RPM_BUILD_ROOT%{_sbindir}/plymouthd $RPM_BUILD_ROOT/sbin
+%{__mv} $RPM_BUILD_ROOT%{_libdir}/libply.so.* $RPM_BUILD_ROOT/%{_lib}
+%{__mv} $RPM_BUILD_ROOT%{_libdir}/libply-splash-core.so.* $RPM_BUILD_ROOT/%{_lib}
 ln -sf /%{_lib}/$(basename $RPM_BUILD_ROOT/%{_lib}/libply.so.*.*.*) $RPM_BUILD_ROOT%{_libdir}/libply.so
 ln -sf /%{_lib}/$(basename $RPM_BUILD_ROOT/%{_lib}/libply-splash-core.so.*.*.*) $RPM_BUILD_ROOT%{_libdir}/libply-splash-core.so
-%{__rm} $RPM_BUILD_ROOT/%{_lib}/libply{,-splash-core}.so
 
 install -d $RPM_BUILD_ROOT%{_localstatedir}/lib/plymouth
-cp -p %{SOURCE4} $RPM_BUILD_ROOT%{_datadir}/plymouth/default-boot-duration
+cp -p %{SOURCE2} $RPM_BUILD_ROOT%{_datadir}/plymouth/default-boot-duration
 > $RPM_BUILD_ROOT%{_localstatedir}/lib/plymouth/boot-duration
 
 # Override plymouth-update-initrd to work with dracut or mkinitrd
-cp -p %{SOURCE6} $RPM_BUILD_ROOT%{_libexecdir}/plymouth/plymouth-update-initrd
-
-%{__rm} $RPM_BUILD_ROOT{/%{_lib},%{_libdir}}/*.la \
-	$RPM_BUILD_ROOT%{_libdir}/plymouth/*.{a,la} \
-	$RPM_BUILD_ROOT%{_libdir}/plymouth/renderers/*.{a,la}
-
-%{__mv} $RPM_BUILD_ROOT/%{_lib}/{libply,libply-splash-core}.a $RPM_BUILD_ROOT%{_libdir}
-
-install -d $RPM_BUILD_ROOT%{_localstatedir}/lib/plymouth
-
-cp -p %{SOURCE1} $RPM_BUILD_ROOT%{_pixmapsdir}/plymouth-logo.png
-cp -p %{SOURCE2} $RPM_BUILD_ROOT%{systemdtmpfilesdir}/%{name}.conf
+cp -p %{SOURCE3} $RPM_BUILD_ROOT%{_libexecdir}/plymouth/plymouth-update-initrd
 
 ln -s plymouth-logo.png $RPM_BUILD_ROOT%{_pixmapsdir}/system-logo-white.png
 
@@ -439,7 +424,7 @@ fi
 
 %files -f %{name}.lang
 %defattr(644,root,root,755)
-%doc AUTHORS README TODO
+%doc AUTHORS README.md
 %dir %{_sysconfdir}/plymouth
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/plymouth/plymouthd.conf
 %{_mandir}/man8/plymouth.8*
@@ -466,10 +451,8 @@ fi
 %{_datadir}/plymouth/themes/tribar/tribar.plymouth
 %{_pixmapsdir}/plymouth-logo.png
 %{_pixmapsdir}/system-logo-white.png
-%{systemdtmpfilesdir}/%{name}.conf
 %dir %{_localstatedir}/lib/plymouth
 %ghost %{_localstatedir}/lib/plymouth/boot-duration
-%{_localstatedir}/run/plymouth
 %{_localstatedir}/spool/plymouth
 %{_mandir}/man1/plymouth.1*
 %{_mandir}/man8/plymouthd.8*
@@ -551,7 +534,8 @@ fi
 
 %files plugin-label
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/plymouth/label.so
+%attr(755,root,root) %{_libdir}/plymouth/label-freetype.so
+%attr(755,root,root) %{_libdir}/plymouth/label-pango.so
 
 %files plugin-script
 %defattr(644,root,root,755)

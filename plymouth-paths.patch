@@ -1,0 +1,38 @@
+--- plymouth-24.004.60/meson_options.txt.orig	2024-01-04 22:08:14.000000000 +0100
++++ plymouth-24.004.60/meson_options.txt	2024-02-17 07:49:24.640032483 +0100
+@@ -83,3 +83,8 @@ option('docs',
+   value: true,
+   description: 'Build documentation',
+ )
++option('systemd_ask_password_agent_path',
++  type: 'string',
++  value: '',
++  description: 'path to systemd-tty-ask-password-agent',
++)
+--- plymouth-24.004.60/systemd-units/meson.build.orig	2024-01-04 22:08:14.000000000 +0100
++++ plymouth-24.004.60/systemd-units/meson.build	2024-02-17 07:51:17.026090302 +0100
+@@ -21,7 +21,7 @@ foreach unit_templ : systemd_unit_templa
+       'PLYMOUTH_CLIENT_DIR': get_option('prefix') / get_option('bindir'),
+       'PLYMOUTH_DAEMON_DIR': get_option('prefix') / get_option('sbindir'),
+       'plymouthruntimedir': plymouth_runtime_dir,
+-      'SYSTEMD_ASK_PASSWORD_AGENT': systemd_ask_password_agent.full_path(),
++      'SYSTEMD_ASK_PASSWORD_AGENT': systemd_ask_password_agent_path,
+     },
+     install: true,
+     install_dir: systemd_unit_dir,
+--- plymouth-24.004.60/meson.build.orig	2024-02-17 07:52:35.985662541 +0100
++++ plymouth-24.004.60/meson.build	2024-02-17 07:52:39.992307502 +0100
+@@ -44,7 +44,12 @@ if get_option('systemd-integration')
+   systemd_unit_dir = systemd_dep.get_variable('systemdsystemunitdir',
+     pkgconfig_define: [ 'rootprefix', get_option('prefix') ],
+   )
+-  systemd_ask_password_agent = find_program('systemd-tty-ask-password-agent')
++  if get_option('systemd_ask_password_agent_path') == ''
++    systemd_ask_password_agent = find_program('systemd-tty-ask-password-agent')
++    systemd_ask_password_agent_path = systemd_ask_password_agent.full_path()
++  else
++    systemd_ask_password_agent_path = get_option('systemd_ask_password_agent_path')
++  endif
+ endif
+ 
+ if get_option('upstart-monitoring')
