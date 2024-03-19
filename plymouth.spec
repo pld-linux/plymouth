@@ -10,7 +10,7 @@ Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
 Version:	24.004.60
-Release:	1
+Release:	2
 License:	GPL v2+
 Group:		Base
 Source0:	https://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.xz
@@ -402,6 +402,9 @@ cp -p %{SOURCE2} $RPM_BUILD_ROOT%{_datadir}/plymouth/default-boot-duration
 cp -p %{SOURCE3} $RPM_BUILD_ROOT%{_libexecdir}/plymouth/plymouth-update-initrd
 
 ln -s plymouth-logo.png $RPM_BUILD_ROOT%{_pixmapsdir}/system-logo-white.png
+
+# Usupported
+%{__rm} -r $RPM_BUILD_ROOT%{_localedir}/ie
 
 %find_lang %{name}
 
