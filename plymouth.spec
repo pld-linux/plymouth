@@ -10,7 +10,7 @@ Summary:	Graphical Boot Animation and Logger
 Summary(pl.UTF-8):	Graficzna animacja i logowanie startu systemu
 Name:		plymouth
 Version:	24.004.60
-Release:	2
+Release:	3
 License:	GPL v2+
 Group:		Base
 Source0:	https://www.freedesktop.org/software/plymouth/releases/%{name}-%{version}.tar.xz
@@ -366,6 +366,8 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 
 %build
 %meson build \
+	--bindir=/bin \
+	--sbindir=/sbin \
 	-Dbackground-color=0x00c663 \
 	-Dbackground-start-color-stop=0x009431 \
 	-Dbackground-end-color-stop=0x006300 \
@@ -386,9 +388,8 @@ cp -p %{SOURCE1} $RPM_BUILD_ROOT%{_pixmapsdir}/plymouth-logo.png
 %ninja_install -C build
 
 # meson-based plymouth build doesn't support installing into split /usr
-install -d $RPM_BUILD_ROOT{/%{_lib},/bin,/sbin}
-%{__mv} $RPM_BUILD_ROOT%{_bindir}/plymouth $RPM_BUILD_ROOT/bin
-%{__mv} $RPM_BUILD_ROOT%{_sbindir}/plymouthd $RPM_BUILD_ROOT/sbin
+install -d $RPM_BUILD_ROOT{/%{_lib},%{_sbindir}}
+%{__mv} $RPM_BUILD_ROOT{/sbin,%{_sbindir}}/plymouth-set-default-theme
 %{__mv} $RPM_BUILD_ROOT%{_libdir}/libply.so.* $RPM_BUILD_ROOT/%{_lib}
 %{__mv} $RPM_BUILD_ROOT%{_libdir}/libply-splash-core.so.* $RPM_BUILD_ROOT/%{_lib}
 ln -sf /%{_lib}/$(basename $RPM_BUILD_ROOT/%{_lib}/libply.so.*.*.*) $RPM_BUILD_ROOT%{_libdir}/libply.so
