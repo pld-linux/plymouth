@@ -365,7 +365,7 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 %{__sed} -i -e 's/Theme=.*/Theme=tribar/' -e 's/ShowDelay=.*//' src/plymouthd.defaults
 
 %build
-%meson build \
+%meson \
 	--bindir=/bin \
 	--sbindir=/sbin \
 	-Dbackground-color=0x00c663 \
@@ -376,7 +376,7 @@ Odznacza się on małym kółkiem kręcącym się na ciemnym tle.
 	-Drelease-file=/etc/os-release \
 	-Dsystemd_ask_password_agent_path=/bin/systemd-tty-ask-password-agent
 
-%ninja_build -C build
+%meson_build
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -385,7 +385,7 @@ install -d $RPM_BUILD_ROOT{%{_pixmapsdir},%{systemdtmpfilesdir}}
 # meson/ninja symlinking requires target file to be already present
 cp -p %{SOURCE1} $RPM_BUILD_ROOT%{_pixmapsdir}/plymouth-logo.png
 
-%ninja_install -C build
+%meson_install
 
 # meson-based plymouth build doesn't support installing into split /usr
 install -d $RPM_BUILD_ROOT{/%{_lib},%{_sbindir}}
