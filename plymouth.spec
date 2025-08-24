@@ -39,7 +39,7 @@ BuildRequires:	meson >= 0.61
 BuildRequires:	ninja >= 1.5
 BuildRequires:	pango-devel >= 1:1.21.0
 BuildRequires:	pkgconfig
-BuildRequires:	rpmbuild(macros) >= 1.736
+BuildRequires:	rpmbuild(macros) >= 2.042
 BuildRequires:	systemd-units
 BuildRequires:	udev-devel
 BuildRequires:	xkeyboard-config
